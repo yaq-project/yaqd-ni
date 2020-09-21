@@ -1,17 +1,36 @@
-protocol = "daqmx-tmux"
-doc = ""
-traits = ["is-daemon"]
+name = "ni-daqmx-tmux"
+description = """
+Triggered NI-daqmx with multiplex.
+"""
+traits = ["is-sensor", "has-measure-trigger", "is-daemon"]
 
 [links]
-source = "https://gitlab.com/yaq/yaqd-ni"
-bugtracker = "https://gitlab.com/yaq/yaqd-ni/-/issues"
-
-[installation]
-PyPI = "https://pypi.org/project/yaqd-ni"
+source = ""
+bugtracker = ""
+manufacturer = ""
 
 [config]
+trigger_source.type = "string"
+nsamples.type = "int"
+timeout.type = "int"
+rest_channel.type = "string"
 
 [state]
+nsamples.type = "int"
+nsamples.default = 900
+nshots.type = "int"
+nshots.default = 100
+regions.type = "string"
+regions.default = "hello world"
 
 [messages]
 
+[messages.allocate_sample_region]
+args.start.type = "int"
+args.stop.type = "int"
+args.channel.type = "int"
+
+[messages.clear_sample_region]
+args.start.type = "int"
+args.stop.type = "int"
+args.channel.type = "int"
