@@ -1,0 +1,17 @@
+protocol = "daqmx-tmux"
+doc = ""
+traits = ["is-daemon"]
+
+[links]
+source = "https://gitlab.com/yaq/yaqd-ni"
+bugtracker = "https://gitlab.com/yaq/yaqd-ni/-/issues"
+
+[installation]
+PyPI = "https://pypi.org/project/yaqd-ni"
+
+[config]
+
+[state]
+
+[messages]
+
