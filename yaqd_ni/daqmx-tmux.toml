@@ -7,6 +7,33 @@ source = ""
 bugtracker = ""
 manufacturer = ""
 
+[[types]]
+type = "record"
+name = "channel"
+fields = [{"name"="name", "type"="string"},
+          {"name"="range", "type"="string"},
+          {"name"="enabled", "type"="boolean", "default"=true},
+	  {"name"="physical_channel", "type"="string"},
+	  {"name"="invert", "type"="boolean", "default"=false},
+	  {"name"="signal_start", "type"="int"},
+	  {"name"="signal_stop", "type"="int"},
+	  {"name"="signal_presample", "type"="int", default=0},
+	  {"name"="signal_method", "type"="string"},
+	  {"name"="use_baseline", "type"="boolean", "default"=false},
+	  {"name"="baseline_start", "type"="int"},
+	  {"name"="baseline_stop", "type"="int"},
+	  {"name"="baseline_presample", "type"="int", default=0},
+	  {"name"="baseline_method", "type"="string"}]
+
+[[types]]
+type = "record"
+name = "chopper"
+fields = [{"name"="name", "type"="string"},
+          {"name"="enabled", "type"="boolean", "default"=true},
+	  {"name"="invert", "type"="boolean", "default"=false},
+	  {"name"="physical_channel", "type"="string", "default"=false},
+	  {"name"="index", "type"="int"}]
+
 [config]
 
 [config.trigger_source]
@@ -27,32 +54,15 @@ type = "string"
 default = "ai0"
 doc = "Channel to occupy when not making an explicitly specified measurement."
 
-[config.channel]
-type = "record"
-name = "channel"
-fields = [{"name"="name", "type"="string"},
-          {"name"="range", "type"="string"},
-          {"name"="enabled", "type"="boolean", "default"=true},
-	  {"name"="physical_channel", "type"="string"},
-	  {"name"="invert", "type"="boolean", "default"=false},
-	  {"name"="signal_start", "type"="int"},
-	  {"name"="signal_stop", "type"="int"},
-	  {"name"="signal_presample", "type"="int", default=0},
-	  {"name"="signal_method", "type"="string"},
-	  {"name"="use_baseline", "type"="boolean", "default"=false},
-	  {"name"="baseline_start", "type"="int"},
-	  {"name"="baseline_stop", "type"="int"},
-	  {"name"="baseline_presample", "type"="int", default=0},
-	  {"name"="baseline_method", "type"="string"}]
+[config.channels]
+type = "array"
+items = "channel"
+default = []
 
 [config.chopper]
-type = "record"
-name = "chopper"
-fields = [{"name"="name", "type"="string"},
-          {"name"="enabled", "type"="boolean", "default"=true},
-	  {"name"="invert", "type"="boolean", "default"=false},
-	  {"name"="physical_channel", "type"="string", "default"=false},
-	  {"name"="index", "type"="int"}]
+type = "array"
+items = "chopper"
+default = []
 
 [state]
 
@@ -60,4 +70,25 @@ fields = [{"name"="name", "type"="string"},
 type = "int"
 default = 100
 
+[state.shots_processing_script]
+type = ["null", "string"]
+doc = "Path to script for shots processing."
+default = "__null__"
+
 [messages]
+
+[messages.get_nshots]
+doc = "Get the currently planned number of shots."
+response = "int"
+
+[messages.set_nshots]
+doc = "Set the number of shots to acquire."
+request = [{"name"="nshots", "type"="int"}]
+
+[messages.get_shots_processing_script]
+doc = "Get the path to the currently applied shots processing script."
+response = "string"
+
+[messages.set_shots_processing_script]
+doc = "Give the path to a shots processing script."
+request = [{"name"="path", "type"="string"}]

@@ -1,5 +1,15 @@
 {
     "config": {
+        "channels": {
+            "default": [],
+            "items": "channel",
+            "type": "array"
+        },
+        "chopper": {
+            "default": [],
+            "items": "chopper",
+            "type": "array"
+        },
         "loop_at_startup": {
             "doc": "If set to true, the daemon will begin to loop measure as soon as it starts.",
             "type": "boolean"
@@ -19,6 +29,7 @@
             ]
         },
         "nsamples": {
+            "default": 900,
             "type": "int"
         },
         "port": {
@@ -26,6 +37,8 @@
             "type": "int"
         },
         "rest_channel": {
+            "default": "ai0",
+            "doc": "Channel to occupy when not making an explicitly specified measurement.",
             "type": "string"
         },
         "serial": {
@@ -37,54 +50,26 @@
             ]
         },
         "timeout": {
-            "type": "int"
+            "default": 10.0,
+            "doc": "Timeout in seconds.",
+            "type": "float"
         },
         "trigger_source": {
+            "default": "ai0",
             "type": "string"
         }
     },
-    "description": "Triggered NI-daqmx with multiplex.\n",
-    "doc": "Daemons with the is-sensor trait are capable of measuring some unknown quantities.\nSensor daemons may have multiple channels if a single measurement returns multiple values.\n",
+    "doc": "Triggered NI-daqmx with multiplex.",
     "links": {
         "bugtracker": "",
         "manufacturer": "",
         "source": ""
     },
     "messages": {
-        "allocate_sample_region": {
-            "args": {
-                "channel": {
-                    "type": "int"
-                },
-                "start": {
-                    "type": "int"
-                },
-                "stop": {
-                    "type": "int"
-                }
-            },
-            "request": [],
-            "response": "null"
-        },
         "busy": {
             "doc": "Returns true if daemon is currently busy.",
             "request": [],
             "response": "boolean"
-        },
-        "clear_sample_region": {
-            "args": {
-                "channel": {
-                    "type": "int"
-                },
-                "start": {
-                    "type": "int"
-                },
-                "stop": {
-                    "type": "int"
-                }
-            },
-            "request": [],
-            "response": "null"
         },
         "get_channel_names": {
             "doc": "Get current channel names.",
@@ -137,6 +122,16 @@
                 ]
             }
         },
+        "get_nshots": {
+            "doc": "Get the currently planned number of shots.",
+            "request": [],
+            "response": "int"
+        },
+        "get_shots_processing_script": {
+            "doc": "Get the path to the currently applied shots processing script.",
+            "request": [],
+            "response": "string"
+        },
         "get_state": {
             "doc": "Get version of the running daemon",
             "request": [],
@@ -164,6 +159,26 @@
             ],
             "response": "int"
         },
+        "set_nshots": {
+            "doc": "Set the number of shots to acquire.",
+            "request": [
+                {
+                    "name": "nshots",
+                    "type": "int"
+                }
+            ],
+            "response": "null"
+        },
+        "set_shots_processing_script": {
+            "doc": "Give the path to a shots processing script.",
+            "request": [
+                {
+                    "name": "path",
+                    "type": "string"
+                }
+            ],
+            "response": "null"
+        },
         "shutdown": {
             "doc": "Cleanly shutdown (or restart) daemon.",
             "request": [
@@ -181,25 +196,125 @@
             "response": "null"
         }
     },
-    "name": "ni-daqmx-tmux",
+    "protocol": "ni-daqmx-tmux",
     "requires": [],
     "state": {
         "nshots": {
             "default": 100,
             "type": "int"
         },
-        "regions": {
-            "default": "hello world",
-            "type": "string"
+        "shots_processing_script": {
+            "default": null,
+            "doc": "Path to script for shots processing.",
+            "type": [
+                "null",
+                "string"
+            ]
         }
     },
     "trait": "is-sensor",
     "traits": [
-        "is-daemon",
         "is-sensor",
+        "is-daemon",
         "has-measure-trigger"
     ],
     "types": [
+        {
+            "fields": [
+                {
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "name": "range",
+                    "type": "string"
+                },
+                {
+                    "default": true,
+                    "name": "enabled",
+                    "type": "boolean"
+                },
+                {
+                    "name": "physical_channel",
+                    "type": "string"
+                },
+                {
+                    "default": false,
+                    "name": "invert",
+                    "type": "boolean"
+                },
+                {
+                    "name": "signal_start",
+                    "type": "int"
+                },
+                {
+                    "name": "signal_stop",
+                    "type": "int"
+                },
+                {
+                    "default": 0,
+                    "name": "signal_presample",
+                    "type": "int"
+                },
+                {
+                    "name": "signal_method",
+                    "type": "string"
+                },
+                {
+                    "default": false,
+                    "name": "use_baseline",
+                    "type": "boolean"
+                },
+                {
+                    "name": "baseline_start",
+                    "type": "int"
+                },
+                {
+                    "name": "baseline_stop",
+                    "type": "int"
+                },
+                {
+                    "default": 0,
+                    "name": "baseline_presample",
+                    "type": "int"
+                },
+                {
+                    "name": "baseline_method",
+                    "type": "string"
+                }
+            ],
+            "name": "channel",
+            "type": "record"
+        },
+        {
+            "fields": [
+                {
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "default": true,
+                    "name": "enabled",
+                    "type": "boolean"
+                },
+                {
+                    "default": false,
+                    "name": "invert",
+                    "type": "boolean"
+                },
+                {
+                    "default": false,
+                    "name": "physical_channel",
+                    "type": "string"
+                },
+                {
+                    "name": "index",
+                    "type": "int"
+                }
+            ],
+            "name": "chopper",
+            "type": "record"
+        },
         {
             "fields": [
                 {
