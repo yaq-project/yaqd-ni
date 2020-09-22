@@ -10,7 +10,10 @@ author-email = "blaise@untzag.com"
 home-page = "https://yaq.fyi"
 description-file = "README.md"
 requires-python = ">=3.7"
-requires = ["yaqd-core>=2020.06.3", "pydaqmx"]
+requires = ["yaqd-core>=2020.06.3",
+            "pydaqmx",
+	    "numpy",
+	    ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
@@ -30,7 +33,7 @@ Issues = "https://gitlab.com/yaq/yaqd-ni/issues"
 dev = ["black", "pre-commit"]
 
 [tool.flit.scripts]
-yaqd-daqmx-tmux = "yaqd_ni._daqmx_tmux:DaqmxTmux.main"
+yaqd-ni-daqmx-tmux = "yaqd_ni._ni_daqmx_tmux:DaqmxTmux.main"
 
 
 [tool.black]

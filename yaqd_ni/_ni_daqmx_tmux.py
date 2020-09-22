@@ -1,26 +1,22 @@
 __all__ = ["DaqmxTmux"]
 
 import asyncio
-from typing import Dict, Any, List
 import os
 import imp
 import time
 import copy
 import pathlib
+from typing import Dict, Any, List
 
 import numpy as np
-
-from PySide2 import QtCore, QtWidgets
-import pyqtgraph as pg
-
 from PyDAQmx import *
 from PyDAQmx import byref
 
 from yaqd_core import Sensor
 
 
-class DaqmxTmux(Sensor):
-    _kind = "daqmx-tmux"
+class NiDaqmxTmux(Sensor):
+    _kind = "ni-daqmx-tmux"
 
     def __init__(self, name, config, config_filepath):
         super().__init__(name, config, config_filepath)
