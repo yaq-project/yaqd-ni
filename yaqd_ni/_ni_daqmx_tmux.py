@@ -9,7 +9,6 @@ import pathlib
 from typing import Dict, Any, List
 
 import numpy as np  # type: ignore
-import PyDAQmx  # type: ignore
 
 from yaqd_core import Sensor
 
@@ -31,6 +30,8 @@ class NiDaqmxTmux(Sensor):
         change.
         """
         # ensure previous task closed
+        import PyDAQmx  # type: ignore
+
         if self.task_created:
             DAQmxStopTask(self.task_handle)
             DAQmxClearTask(self.task_handle)
@@ -130,6 +131,8 @@ class NiDaqmxTmux(Sensor):
         """
         Acquire once using the created task.
         """
+        import PyDAQmx  # type: ignore
+
         if len(self.data.cols) == 0:
             return BaseDriver.measure(self)
         ### measure ###########################################################
