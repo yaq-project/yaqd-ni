@@ -8,9 +8,8 @@ import copy
 import pathlib
 from typing import Dict, Any, List
 
-import numpy as np
-from PyDAQmx import *
-from PyDAQmx import byref
+import numpy as np  # type: ignore
+import PyDAQmx  # type: ignore
 
 from yaqd_core import Sensor
 

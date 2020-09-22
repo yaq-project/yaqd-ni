@@ -33,8 +33,7 @@ Issues = "https://gitlab.com/yaq/yaqd-ni/issues"
 dev = ["black", "pre-commit"]
 
 [tool.flit.scripts]
-yaqd-ni-daqmx-tmux = "yaqd_ni._ni_daqmx_tmux:DaqmxTmux.main"
-
+yaqd-ni-daqmx-tmux = "yaqd_ni._ni_daqmx_tmux:NiDaqmxTmux.main"
 
 [tool.black]
 line-length = 99

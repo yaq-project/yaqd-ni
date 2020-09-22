@@ -30,8 +30,8 @@ mypy:
 entry:
   stage: test
   script:
-    - yaqd-daqmx-tmux --version
-    - yaqd-daqmx-tmux -h
+    - yaqd-ni-daqmx-tmux --version
+    - yaqd-ni-daqmx-tmux --help
 traits:
   stage: test
   script:
