@@ -18,7 +18,7 @@ repos:
   - repo: https://gitlab.com/yaq/yaq-traits
     rev: master
     hooks:
-      - id: yaq-traits
+      - id: yaq-traits-check
 
 default_language_version:
   python: python3.8
