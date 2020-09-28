@@ -15,5 +15,10 @@ repos:
       - id: mypy
         exclude: ^docs/conf.py
 
+  - repo: https://gitlab.com/yaq/yaq-traits
+    rev: master
+    hooks:
+      - id: yaq-traits
+
 default_language_version:
   python: python3.8
