@@ -5,7 +5,7 @@
             "items": "channel",
             "type": "array"
         },
-        "chopper": {
+        "choppers": {
             "default": [],
             "items": "chopper",
             "type": "array"
@@ -122,10 +122,23 @@
                 ]
             }
         },
+        "get_measured_samples": {
+            "request": [],
+            "response": "ndarray"
+        },
+        "get_measured_shots": {
+            "request": [],
+            "response": "ndarray"
+        },
         "get_nshots": {
             "doc": "Get the currently planned number of shots.",
             "request": [],
             "response": "int"
+        },
+        "get_sample_correspondances": {
+            "doc": "Returns an array of integers of length nsamples. Zero indicates rest sample. Postive indicates channel. Negative indicates chopper.",
+            "request": [],
+            "response": "ndarray"
         },
         "get_shots_processing_script": {
             "doc": "Get the path to the currently applied shots processing script.",
@@ -214,11 +227,22 @@
     },
     "trait": "is-sensor",
     "traits": [
+        "has-measure-trigger",
         "is-sensor",
-        "is-daemon",
-        "has-measure-trigger"
+        "is-daemon"
     ],
     "types": [
+        {
+            "default": "average",
+            "name": "processing_method",
+            "symbols": [
+                "average",
+                "sum",
+                "min",
+                "max"
+            ],
+            "type": "enum"
+        },
         {
             "fields": [
                 {
@@ -258,7 +282,7 @@
                 },
                 {
                     "name": "signal_method",
-                    "type": "string"
+                    "type": "processing_method"
                 },
                 {
                     "default": false,
@@ -266,12 +290,20 @@
                     "type": "boolean"
                 },
                 {
+                    "default": "__null__",
                     "name": "baseline_start",
-                    "type": "int"
+                    "type": [
+                        "null",
+                        "int"
+                    ]
                 },
                 {
+                    "default": "__null__",
                     "name": "baseline_stop",
-                    "type": "int"
+                    "type": [
+                        "null",
+                        "int"
+                    ]
                 },
                 {
                     "default": 0,
@@ -280,7 +312,7 @@
                 },
                 {
                     "name": "baseline_method",
-                    "type": "string"
+                    "type": "processing_method"
                 }
             ],
             "name": "channel",

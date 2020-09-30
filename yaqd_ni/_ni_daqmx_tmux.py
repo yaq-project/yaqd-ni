@@ -1,11 +1,10 @@
-__all__ = ["DaqmxTmux"]
-
 import asyncio
 import os
 import imp
 import time
 import copy
 import pathlib
+from dataclasses import dataclass
 from typing import Dict, Any, List
 
 import numpy as np  # type: ignore
@@ -13,43 +12,120 @@ import numpy as np  # type: ignore
 from yaqd_core import Sensor
 
 
+def process_samples(method, samples):
+    # samples arry shape: (sample, shot)
+    if method == "average":
+        shots = np.mean(samples, axis=0)
+    elif method == "sum":
+        shots = np.sum(samples, axis=0)
+    elif method == "min":
+        shots = np.min(samples, axis=0)
+    elif method == "max":
+        shots = np.max(samples, axis=0)
+    else:
+        raise KeyError("sample processing method not recognized")
+    return shots
+
+
+@dataclass
+class Channel:
+    name: str
+    range: str
+    enabled: bool
+    physical_channel: str
+    invert: bool
+    signal_start: int
+    signal_stop: int
+    signal_method: str
+    use_baseline: bool
+    baseline_start: int
+    baseline_stop: int
+    baseline_method: str
+    baseline_presample: int = 0
+    signal_presample: int = 0
+
+
+@dataclass
+class Chopper:
+    name: str
+    enabled: bool
+    physical_channel: str
+    invert: bool
+    index: int
+
+
 class NiDaqmxTmux(Sensor):
     _kind = "ni-daqmx-tmux"
 
     def __init__(self, name, config, config_filepath):
         super().__init__(name, config, config_filepath)
-        # Perform any unique initialization
+        # channels
+        self._channels = []
+        for d in self._config["channels"]:
+            channel = Channel(**d)
+            self._channels.append(channel)
+        self._channel_names = [c.name for c in self._channels if c.enabled]  # expected by parent
+        self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
+        # choppers
+        self._choppers = []
+        for d in self._config["choppers"]:
+            chopper = Chopper(**d)
+            if chopper.enabled:
+                self._choppers.append(chopper)
+        # finish
+        self._create_sample_correspondances()
+        self._create_task()
 
-        self._channel_names = ["channel"]
-        self._channel_units = {"channel": "units"}
+    def _create_sample_correspondances(self):
+        self._sample_correspondances = np.zeros(self._config["nsamples"])
+        # channels
+        for sample_index in range(self._config["nsamples"]):
+            channel_idxs = []  # contains indicies of all channels that want to read at this sample
+            for channel_index, channel in enumerate(self._channels):
+                if not channel.enabled:
+                    continue
+                if (
+                    channel.signal_start - channel.signal_presample
+                    < sample_index
+                    < channel.signal_stop
+                ):
+                    channel_idxs.append(channel_index + 1)
+                if channel.use_baseline and (
+                    channel.baseline_start - channel.baseline_presample
+                    < sample_index
+                    < channel.baseline_stop
+                ):
+                    channel_idxs.append(channel_index + 1)
+            if len(channel_idxs) == 1:
+                self._sample_correspondances[sample_index] = channel_idxs[0]
+            elif len(channel_idxs) > 1:
+                self._sample_correspondances[sample_index] = channel_idxs[
+                    sample_index % len(channel_idxs)
+                ]
+        # choppers
+        for chopper_index, chopper in enumerate(self._choppers):
+            if not chopper.enabled:
+                continue
+            self._sample_correspondances[chopper.index] = -chopper_index
 
     def _create_task(self):
-        """
-        Define a new DAQ task. This needs to be run once every time the
-        parameters of the aquisition (channel correspondance, shots, etc.)
-        change.
-        """
-        # ensure previous task closed
         import PyDAQmx  # type: ignore
 
-        if self.task_created:
-            DAQmxStopTask(self.task_handle)
-            DAQmxClearTask(self.task_handle)
-        self.task_created = False
-        # calculate the number of 'virtual samples' to take -------------------
-        self.virtual_samples = self._state["nsamples"]
-        # create task ---------------------------------------------------------
+        # ensure previous task closed
+        if hasattr(self, "_task_handle"):
+            PyDAQmx.DAQmxStopTask(self._task_handle)
+            PyDAQmx.DAQmxClearTask(self._task_handle)
+        # create task
         try:
-            self.task_handle = TaskHandle()
-            self.read = int32()  # ??? --BJT 2017-06-03
-            DAQmxCreateTask("", byref(self.task_handle))
-        except DAQError as err:
-            print("DAQmx Error: %s" % err)
-            g.logger.log("error", "Error in task creation", err)
-            DAQmxStopTask(self.task_handle)
-            DAQmxClearTask(self.task_handle)
+            self._task_handle = PyDAQmx.TaskHandle()
+            self._read = PyDAQmx.int32()  # ??? --BJT 2017-06-03
+            PyDAQmx.DAQmxCreateTask("", PyDAQmx.byref(self._task_handle))
+        except PyDAQmx.DAQError as err:
+            PyDAQmx.DAQmxStopTask(self._task_handle)
+            PyDAQmx.DAQmxClearTask(self._task_handle)
             return
-        # initialize channels -------------------------------------------------
+        # initialize channels
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         # The daq is addressed in a somewhat non-standard way. A total of ~1000
         # virtual channels are initialized (depends on DAQ speed and laser rep
         # rate). These virtual channels are evenly distributed over the physical
@@ -62,290 +138,165 @@ class NiDaqmxTmux(Sensor):
         # Each virtual channel must have a unique name.
         #
         # The sample clock is supplied by the laser output trigger.
-        #
-        name_index = 0  # something to keep channel names unique
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         try:
             # sample correspondances holds an array of integers
             # zero : rest sample
             # positive : channel
             # negative : chopper
-            for correspondance in sample_correspondances.read():
+            name_index = 0  # something to keep channel names unique
+            for correspondance in list(self._sample_correspondances):
+                correspondance = int(correspondance)
                 if correspondance == 0:
-                    physical_channel = rest_channel.read()
+                    physical_channel = (
+                        "/" + self._config["device_name"] + "/" + self._config["rest_channel"]
+                    )
                     min_voltage = -10.0
                     max_voltage = 10.0
                 elif correspondance > 0:
-                    channel = channels.read()[correspondance - 1]
-                    physical_channel = channel.physical_correspondance.read()
-                    min_voltage, max_voltage = channel.get_range()
+                    channel = self._channels[correspondance - 1]
+                    physical_channel = (
+                        "/" + self._config["device_name"] + "/" + channel.physical_channel
+                    )
+                    min_voltage, max_voltage = -10, 10  # TODO
+                    # min_voltage, max_voltage = channel.get_range()
                 elif correspondance < 0:
-                    physical_channel = choppers.read()[
-                        -correspondance - 1
-                    ].physical_correspondance.read()
+                    chopper = self._choppers[-correspondance - 1]
+                    physical_channel = (
+                        "/" + self._config["device_name"] + "/" + chopper.physical_channel
+                    )
                     min_voltage = -10.0
                     max_voltage = 10.0
                 channel_name = "sample_" + str(name_index).zfill(3)
-                DAQmxCreateAIVoltageChan(
-                    self.task_handle,  # task handle
-                    DAQ_device_name + "/ai%i" % physical_channel,  # physical chanel
+                PyDAQmx.DAQmxCreateAIVoltageChan(
+                    self._task_handle,  # task handle
+                    physical_channel,  # physical channel
                     channel_name,  # name to assign to channel
-                    DAQmx_Val_Diff,  # the input terminal configuration
+                    PyDAQmx.DAQmx_Val_Diff,  # the input terminal configuration
                     min_voltage,
-                    max_voltage,  # minVal, maxVal
-                    DAQmx_Val_Volts,  # units
-                    None,
-                )  # custom scale
+                    max_voltage,
+                    PyDAQmx.DAQmx_Val_Volts,  # units
+                    None,  # reserved
+                )
                 name_index += 1
-        except DAQError as err:
-            print("DAQmx Error: %s" % err)
-            g.logger.log("error", "Error in virtual channel creation", err)
-            DAQmxStopTask(self.task_handle)
-            DAQmxClearTask(self.task_handle)
+        except PyDAQmx.DAQError as err:
+            print(err)
+            PyDAQmx.DAQmxStopTask(self._task_handle)
+            PyDAQmx.DAQmxClearTask(self._task_handle)
             return
-        # define timing -------------------------------------------------------
+        # define timing
         try:
-            DAQmxCfgSampClkTiming(
-                self.task_handle,  # task handle
-                "/" + DAQ_device_name + "/PFI0",  # sorce terminal
+            PyDAQmx.DAQmxCfgSampClkTiming(
+                self._task_handle,  # task handle
+                "/"
+                + self._config["device_name"]
+                + "/"
+                + self._config["trigger_source"],  # sorce terminal
                 1000.0,  # sampling rate (samples per second per channel) (float 64) (in externally clocked mode, only used to initialize buffer)
-                DAQmx_Val_Rising,  # acquire samples on the rising edges of the sample clock
-                DAQmx_Val_FiniteSamps,  # acquire a finite number of samples
-                int(self._state["shots"]),
-            )  # samples per channel to acquire (unsigned integer 64)
-        except DAQError as err:
-            print("DAQmx Error: %s" % err)
-            g.logger.log("error", "Error in timing definition", err)
-            DAQmxStopTask(self.task_handle)
-            DAQmxClearTask(self.task_handle)
+                PyDAQmx.DAQmx_Val_Rising,  # acquire samples on the rising edges of the sample clock
+                PyDAQmx.DAQmx_Val_FiniteSamps,  # acquire a finite number of samples
+                int(self._state["nshots"]),  # samples per channel to acquire
+            )
+        except PyDAQmx.DAQError as err:
+            PyDAQmx.DAQmxStopTask(self._task_handle)
+            PyDAQmx.DAQmxClearTask(self._task_handle)
             return
-        # create arrays for task to fill --------------------------------------
-        self.samples = np.zeros(
-            int(self._state["shots"] * self._state["nsamples"]), dtype=np.float64
-        )
-        self.samples_len = len(self.samples)  # do not want to call for every acquisition
-        # finish --------------------------------------------------------------
-        self.task_created = True
-        self.task_changed.emit()
 
-    def measure(self):
-        """
-        Acquire once using the created task.
-        """
+    async def _measure(self):
+        await asyncio.sleep(0)
+        samples = self._measure_samples()  # shape: (sample, shot)
+        shots = np.empty(
+            [
+                len(self._channel_names) + len([c for c in self._choppers if c.enabled]),
+                self._state["nshots"],
+            ]
+        )
+        # channels
+        i = 0
+        for channel_index, channel in enumerate(self._channels):
+            if not channel.enabled:
+                continue
+            # signal
+            idxs = self._sample_correspondances == channel_index + 1
+            idxs[channel.signal_stop + 1 :] = False
+            signal_samples = samples[idxs]
+            signal_shots = process_samples(channel.signal_method, signal_samples)
+            # baseline
+            if not channel.use_baseline:
+                baseline = 0
+                continue
+            idxs = self._sample_correspondances == channel_index + 1
+            idxs[: channel.signal_stop + 1] = False
+            baseline_samples = samples[idxs]
+            baseline_shots = process_samples(channel.baseline_method, baseline_samples)
+            # math
+            shots[i] = signal_shots - baseline_shots
+            if channel.invert:
+                shots[i] *= 1
+            i += 1
+        # choppers
+        for chopper in self._choppers:
+            if not chopper.enabled:
+                continue
+            cutoff = 1.0  # volts
+            out = samples[chopper.index]
+            out[out <= cutoff] = -1.0
+            out[out > cutoff] = 1.0
+            if chopper.invert:
+                out *= -1
+            shots[i] = out
+            i += 1
+        # process
+        path = self._config["shots_processing_path"]
+        name = os.path.basename(path).split(".")[0]
+        directory = os.path.dirname(path)
+        f, p, d = imp.find_module(name, [directory])
+        processing_module = imp.load_module(name, f, p, d)
+        kinds = ["channel" for _ in self._channel_names] + [
+            "chopper" for c in self._choppers if c.enabled
+        ]
+        names = self._channel_names + [c.name for c in self._choppers if c.enabled]
+        out = processing_module.process(shots, names, kinds)
+        if len(out) == 3:
+            out, out_names, out_signed = out
+        else:
+            out, out_names = out
+            out_signed = False
+        # finish
+        self._samples = samples
+        self._shots = shots
+        out = {k: v for k, v in zip(self._channel_names, out)}
+        return out
+
+    def _measure_samples(self):
         import PyDAQmx  # type: ignore
 
-        if len(self.data.cols) == 0:
-            return BaseDriver.measure(self)
-        ### measure ###########################################################
-        # unpack inputs -------------------------------------------------------
-        self.running = True
-        # self.update_ui.emit()
-        if not self.task_created:
-            return
-        start_time = time.time()
-        # collect samples array -----------------------------------------------
-        # Exponential backoff for retrying measurement
-        for wait in np.geomspace(0.01, 60, 10):
+        samples = np.zeros(int(self._state["nshots"] * self._config["nsamples"]), dtype=np.float64)
+        for wait in np.geomspace(0.01, 60, 10):  # exponential backoff for retrying measurement
             try:
-                self.thread
-                self.read = int32()
-                DAQmxStartTask(self.task_handle)
-                DAQmxReadAnalogF64(
-                    self.task_handle,  # task handle
-                    int(self._state["shots"]),  # number of samples per channel
-                    10.0,  # timeout (seconds) for each read operation
-                    DAQmx_Val_GroupByScanNumber,  # fill mode (specifies whether or not the samples are interleaved)
-                    self.samples,  # read array
-                    self.samples_len,  # size of the array, in samples, into which samples are read
-                    byref(self.read),  # reference of thread
-                    None,
-                )  # reserved by NI, pass NULL (?)
-                DAQmxStopTask(self.task_handle)
-            except DAQError as err:
-                print("DAQmx Error: %s" % err)
-                g.logger.log("error", "Error in timing definition", err)
-                DAQmxStopTask(self.task_handle)
+                self._read = PyDAQmx.int32()
+                PyDAQmx.DAQmxStartTask(self._task_handle)
+                PyDAQmx.DAQmxReadAnalogF64(
+                    self._task_handle,  # task handle
+                    int(self._state["nshots"]),  # number of samples per channel
+                    self._config["timeout"],  # timeout (seconds) for each read operation
+                    PyDAQmx.DAQmx_Val_GroupByScanNumber,  # fill mode
+                    samples,  # read array
+                    len(samples),  # size of the array, in samples, into which samples are read
+                    PyDAQmx.byref(self._read),  # reference of thread
+                    None,  # reserved by NI
+                )
+                PyDAQmx.DAQmxStopTask(self._task_handle)
+            except PyDAQmx.DAQError as err:
+                print(err)
+                PyDAQmx.DAQmxStopTask(self._task_handle)
                 time.sleep(wait)
             else:
                 break
         else:
-            DAQmxClearTask(self.task_handle)
-        # export samples
-        samples.write(self.samples)
-        ### process ###########################################################
-        # calculate shot values for each channel, chopper ---------------------
-        active_channels = [channel for channel in channels.read() if channel.active.read()]
-        active_choppers = [chopper for chopper in choppers.read() if chopper.active.read()]
-        shots_array = np.full(
-            (len(active_channels) + len(active_choppers), int(self._state["shots"])), np.nan
-        )
-        folded_samples = self.samples.copy().reshape((self._state["nsamples"], -1), order="F")
-        index = 0
-        # channels
-        for channel_index, channel in enumerate(active_channels):
-            # get signal points
-            signal_index_possibilities = range(
-                int(channel.signal_start_index.read()), int(channel.signal_stop_index.read()) + 1,
-            )
-            signal_indicies = [
-                i
-                for i in signal_index_possibilities
-                if sample_correspondances.read()[i] == channel_index + 1
-            ]
-            signal_indicies = signal_indicies[
-                int(channel.signal_pre_index.read()) :
-            ]  # remove pre points
-            signal_samples = folded_samples[signal_indicies]
-            # process signal
-            if channel.signal_method.read() == "Average":
-                signal = np.mean(signal_samples, axis=0)
-            elif channel.signal_method.read() == "Sum":
-                signal = np.sum(signal_samples, axis=0)
-            elif channel.signal_method.read() == "Min":
-                signal = np.min(signal_samples, axis=0)
-            elif channel.signal_method.read() == "Max":
-                signal = np.max(signal_samples, axis=0)
-            # baseline
-            if channel.use_baseline.read():
-                # get baseline points
-                baseline_index_possibilities = range(
-                    int(channel.baseline_start_index.read()),
-                    int(channel.baseline_stop_index.read()) + 1,
-                )
-                baseline_indicies = [
-                    i
-                    for i in baseline_index_possibilities
-                    if sample_correspondances.read()[i] == channel_index + 1
-                ]
-                baseline_indicies = baseline_indicies[
-                    int(channel.baseline_pre_index.read()) :
-                ]  # remove pre points
-                baseline_samples = folded_samples[baseline_indicies]
-                # process baseline
-                if channel.baseline_method.read() == "Average":
-                    baseline = np.mean(baseline_samples, axis=0)
-                elif channel.baseline_method.read() == "Sum":
-                    baseline = np.sum(baseline_samples, axis=0)
-                elif channel.baseline_method.read() == "Min":
-                    baseline = np.min(baseline_samples, axis=0)
-                elif channel.baseline_method.read() == "Max":
-                    baseline = np.max(baseline_samples, axis=0)
-            else:
-                baseline = 0
-            out = signal - baseline
-            # invert
-            if channel.invert.read():
-                out *= -1
-            # finish
-            shots_array[index] = out
-            index += 1
-        # choppers
-        for chopper in active_choppers:
-            cutoff = 1.0  # volts
-            out = folded_samples[int(chopper.index.read())]
-            out[out <= cutoff] = -1.0
-            out[out > cutoff] = 1.0
-            if chopper.invert.read():
-                out *= -1
-            shots_array[index] = out
-            index += 1
-        # export shots
-        channel_names = [channel.name.read() for channel in active_channels]
-        chopper_names = [chopper.name.read() for chopper in active_choppers]
-        shots.write(shots_array)  # TODO: can I remove this?
-        shots.write_properties((1,), channel_names + chopper_names, shots_array)
-        # do math -------------------------------------------------------------
-        # pass through shots processing module
-        with self.processing_timer:
-            path = shots_processing_module_path.read()
-            name = os.path.basename(path).split(".")[0]
-            directory = os.path.dirname(path)
-            f, p, d = imp.find_module(name, [directory])
-            processing_module = imp.load_module(name, f, p, d)
-            kinds = ["channel" for _ in channel_names] + ["chopper" for _ in chopper_names]
-            names = channel_names + chopper_names
-            out = processing_module.process(shots_array, names, kinds)
-            if len(out) == 3:
-                out, out_names, out_signed = out
-            else:
-                out, out_names = out
-                out_signed = False
-
-        seconds_for_shots_processing.write(self.processing_timer.interval)
-        # export last data
-        self.data.write_properties((1,), out_names, out, out_signed)
-        self.update_ui.emit()
-        ### finish ############################################################
-        seconds_since_last_task.write(time.time() - self.previous_time)
-        self.previous_time = time.time()
-        self.running = False
-        stop_time = time.time()
-        seconds_for_acquisition.write(stop_time - start_time)
-        self.measure_time.write(seconds_for_acquisition.read())
-
-    def update_sample_correspondances(self, proposed_channels, proposed_choppers):
-        """
-        Parameters
-        ----------
-        channels : list of Channel objects
-            The proposed channel settings.
-        choppers : list of Chopper objects
-            The proposed chopper settings.
-        """
-        # sections is a list of lists: [correspondance, start index, stop index]
-        sections = []
-        for i in range(len(proposed_channels)):
-            channel = proposed_channels[i]
-            if channel.active.read():
-                correspondance = i + 1  # channels go from 1 --> infinity
-                start = channel.signal_start_index.read()
-                stop = channel.signal_stop_index.read()
-                sections.append([correspondance, start, stop])
-                if channel.use_baseline.read():
-                    start = channel.baseline_start_index.read()
-                    stop = channel.baseline_stop_index.read()
-                    sections.append([correspondance, start, stop])
-        # desired is a list of lists containing all of the channels
-        # that desire to be read at a given sample
-        desired = [[] for _ in range(self._state["nsamples"])]
-        for section in sections:
-            correspondance = section[0]
-            start = int(section[1])
-            stop = int(section[2])
-            for i in range(start, stop + 1):
-                desired[i].append(correspondance)
-                desired[i] = [val for val in set(desired[i])]  # remove non-unique
-                desired[i].sort()
-        # samples is the proposed sample correspondances
-        samples = np.full(self._state["nsamples"], 0, dtype=int)
-        for i in range(len(samples)):
-            lis = desired[i]
-            if not len(lis) == 0:
-                samples[i] = lis[i % len(lis)]
-        # choppers
-        for i, chopper in enumerate(proposed_choppers):
-            if chopper.active.read():
-                samples[int(chopper.index.read())] = -(i + 1)
-        # check if proposed is valid
-        # TODO: !!!!!!!!!!!!!!!
-        # apply to channels
-        channels.write(proposed_channels)
-        for channel in channels.read():
-            channel.save()
-        choppers.write(proposed_choppers)
-        for chopper in choppers.read():
-            chopper.save()
-        # update channel names
-        channel_names = [
-            channel.name.read() for channel in channels.read() if channel.active.read()
-        ]
-        chopper_names = [
-            chopper.name.read() for chopper in choppers.read() if chopper.active.read()
-        ]
-        allowed_values = channel_names + chopper_names
-        shot_channel_combo.set_allowed_values(allowed_values)
-        # finish
-        sample_correspondances.write(samples)
-        self.update_task()
+            PyDAQmx.DAQmxClearTask(self._task_handle)
+        samples = samples.reshape((self._config["nsamples"], -1), order="F")
+        return samples
 
     async def update_state(self):
         """Continually monitor and update the current daemon state."""

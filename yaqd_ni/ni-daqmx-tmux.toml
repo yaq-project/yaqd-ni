@@ -8,6 +8,12 @@ bugtracker = ""
 manufacturer = ""
 
 [[types]]
+type = "enum"
+name = "processing_method"
+symbols = ["average", "sum", "min", "max"]
+default = "average"
+
+[[types]]
 type = "record"
 name = "channel"
 fields = [{"name"="name", "type"="string"},
@@ -18,12 +24,12 @@ fields = [{"name"="name", "type"="string"},
 	  {"name"="signal_start", "type"="int"},
 	  {"name"="signal_stop", "type"="int"},
 	  {"name"="signal_presample", "type"="int", default=0},
-	  {"name"="signal_method", "type"="string"},
+	  {"name"="signal_method", "type"="processing_method"},
 	  {"name"="use_baseline", "type"="boolean", "default"=false},
-	  {"name"="baseline_start", "type"="int"},
-	  {"name"="baseline_stop", "type"="int"},
+	  {"name"="baseline_start", "type"=["null", "int"], "default"="__null__"},
+	  {"name"="baseline_stop", "type"=["null", "int"], "default"="__null__"},
 	  {"name"="baseline_presample", "type"="int", default=0},
-	  {"name"="baseline_method", "type"="string"}]
+	  {"name"="baseline_method", "type"="processing_method"}]
 
 [[types]]
 type = "record"
@@ -36,6 +42,10 @@ fields = [{"name"="name", "type"="string"},
 
 [config]
 
+[config.device_name]
+type = "string"
+doc = "DAQmx name of device to address."
+
 [config.trigger_source]
 type = "string"
 default = "ai0"
@@ -47,7 +57,7 @@ default = 900
 [config.timeout]
 type = "float"
 default = 10.0
-doc = "Timeout in seconds."
+doc = "Timeout in seconds between each trigger edge."
 
 [config.rest_channel]
 type = "string"
@@ -59,7 +69,7 @@ type = "array"
 items = "channel"
 default = []
 
-[config.chopper]
+[config.choppers]
 type = "array"
 items = "chopper"
 default = []
@@ -77,6 +87,12 @@ default = "__null__"
 
 [messages]
 
+[messages.get_measured_samples]
+response = "ndarray"
+
+[messages.get_measured_shots]
+response = "ndarray"
+
 [messages.get_nshots]
 doc = "Get the currently planned number of shots."
 response = "int"
@@ -84,6 +100,10 @@ response = "int"
 [messages.set_nshots]
 doc = "Set the number of shots to acquire."
 request = [{"name"="nshots", "type"="int"}]
+
+[messages.get_sample_correspondances]
+doc = "Returns an array of integers of length nsamples. Zero indicates rest sample. Postive indicates channel. Negative indicates chopper."
+response = "ndarray"
 
 [messages.get_shots_processing_script]
 doc = "Get the path to the currently applied shots processing script."
