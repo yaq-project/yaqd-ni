@@ -61,20 +61,27 @@ class NiDaqmxTmux(Sensor):
         super().__init__(name, config, config_filepath)
         # channels
         self._channels = []
-        for d in self._config["channels"]:
-            channel = Channel(**d)
+        for k, d in self._config["channels"].items():
+            channel = Channel(**d, physical_channel=k)
             self._channels.append(channel)
         self._channel_names = [c.name for c in self._channels if c.enabled]  # expected by parent
         self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
         # choppers
         self._choppers = []
-        for d in self._config["choppers"]:
-            chopper = Chopper(**d)
+        for k, d in self._config["choppers"].items():
+            chopper = Chopper(**d, physical_channel=k)
             if chopper.enabled:
                 self._choppers.append(chopper)
+        # check that all physical channels are unique
+        x = []
+        x += [c.physical_channel for c in self._channels]
+        x += [c.physical_channel for c in self._choppers]
+        assert len(set(x)) == len(x)
         # finish
+        self._stale_task = True
         self._create_sample_correspondances()
         self._create_task()
+        self.measure()
 
     def _create_sample_correspondances(self):
         self._sample_correspondances = np.zeros(self._config["nsamples"])
@@ -201,10 +208,23 @@ class NiDaqmxTmux(Sensor):
             PyDAQmx.DAQmxStopTask(self._task_handle)
             PyDAQmx.DAQmxClearTask(self._task_handle)
             return
+        self._stale_task = False
+
+    def get_measured_samples(self):
+        return self._samples
+
+    def get_measured_shots(self):
+        return self._shots
+
+    def get_nshots(self):
+        return self._state["nshots"]
+
+    def get_sample_correspondances(self):
+        return self._sample_correspondances
 
     async def _measure(self):
         await asyncio.sleep(0)
-        samples = self._measure_samples()  # shape: (sample, shot)
+        samples = await self._loop.run_in_executor(None, self._measure_samples)
         shots = np.empty(
             [
                 len(self._channel_names) + len([c for c in self._choppers if c.enabled]),
@@ -296,7 +316,17 @@ class NiDaqmxTmux(Sensor):
         else:
             PyDAQmx.DAQmxClearTask(self._task_handle)
         samples = samples.reshape((self._config["nsamples"], -1), order="F")
-        return samples
+        if self._stale_task:
+            self._create_task()
+            return self._measure_samples
+        else:
+            return samples
+
+    def set_nshots(self, nshots):
+        """Set number of shots."""
+        assert nshots > 0
+        self._create_task(nshots)
+        self._stale_task = True
 
     async def update_state(self):
         """Continually monitor and update the current daemon state."""
