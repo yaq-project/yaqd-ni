@@ -19,7 +19,6 @@ name = "channel"
 fields = [{"name"="name", "type"="string"},
           {"name"="range", "type"="string"},
           {"name"="enabled", "type"="boolean", "default"=true},
-	  {"name"="physical_channel", "type"="string"},
 	  {"name"="invert", "type"="boolean", "default"=false},
 	  {"name"="signal_start", "type"="int"},
 	  {"name"="signal_stop", "type"="int"},
@@ -37,7 +36,6 @@ name = "chopper"
 fields = [{"name"="name", "type"="string"},
           {"name"="enabled", "type"="boolean", "default"=true},
 	  {"name"="invert", "type"="boolean", "default"=false},
-	  {"name"="physical_channel", "type"="string", "default"=false},
 	  {"name"="index", "type"="int"}]
 
 [config]
@@ -65,14 +63,14 @@ default = "ai0"
 doc = "Channel to occupy when not making an explicitly specified measurement."
 
 [config.channels]
-type = "array"
-items = "channel"
-default = []
+type = "map"
+values = "channel"
+default = {}
 
 [config.choppers]
-type = "array"
-items = "chopper"
-default = []
+type = "map"
+values = "chopper"
+default = {}
 
 [state]
 
@@ -81,6 +79,7 @@ type = "int"
 default = 100
 
 [state.shots_processing_script]
+  - pip install -U pip
 type = ["null", "string"]
 doc = "Path to script for shots processing."
 default = "__null__"
@@ -89,6 +88,7 @@ default = "__null__"
 
 [messages.get_measured_samples]
 response = "ndarray"
+doc = "Get an array of shape (sample, shot)."
 
 [messages.get_measured_shots]
 response = "ndarray"

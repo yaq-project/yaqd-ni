@@ -12,7 +12,11 @@ description-file = "README.md"
 requires-python = ">=3.7"
 requires = ["yaqd-core>=2020.06.3",
             "pydaqmx",
+	    "pyqtgraph",
+	    "qtpy",
+	    "qtypes",
 	    "numpy",
+            "yaqc",
 	    ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -34,6 +38,7 @@ dev = ["black", "pre-commit"]
 
 [tool.flit.scripts]
 yaqd-ni-daqmx-tmux = "yaqd_ni._ni_daqmx_tmux:NiDaqmxTmux.main"
+yaqd-ni-daqmx-tmux-gui = "yaqd_ni._ni_daqmx_tmux_gui:main"
 
 [tool.black]
 line-length = 99
