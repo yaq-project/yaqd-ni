@@ -12,11 +12,7 @@ description-file = "README.md"
 requires-python = ">=3.7"
 requires = ["yaqd-core>=2020.06.3",
             "pydaqmx",
-	    "pyqtgraph",
-	    "qtpy",
-	    "qtypes",
 	    "numpy",
-            "yaqc",
 	    ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -35,6 +31,7 @@ Issues = "https://gitlab.com/yaq/yaqd-ni/issues"
 
 [tool.flit.metadata.requires-extra]
 dev = ["black", "pre-commit"]
+gui = ["pyqtgraph", "qtpy", "qtypes", "yaqc"]
 
 [tool.flit.scripts]
 yaqd-ni-daqmx-tmux = "yaqd_ni._ni_daqmx_tmux:NiDaqmxTmux.main"
