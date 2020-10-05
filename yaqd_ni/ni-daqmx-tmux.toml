@@ -79,7 +79,6 @@ type = "int"
 default = 100
 
 [state.shots_processing_script]
-  - pip install -U pip
 type = ["null", "string"]
 doc = "Path to script for shots processing."
 default = "__null__"
