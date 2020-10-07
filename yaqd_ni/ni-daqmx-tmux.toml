@@ -1,6 +1,7 @@
 protocol = "ni-daqmx-tmux"
 doc = "Triggered NI-daqmx with multiplex."
 traits = ["is-sensor", "has-measure-trigger", "is-daemon"]
+hardware = ["ni:pci-6251"]
 
 [links]
 source = ""

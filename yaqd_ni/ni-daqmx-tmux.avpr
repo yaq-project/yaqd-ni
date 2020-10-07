@@ -1,14 +1,18 @@
 {
     "config": {
         "channels": {
-            "default": [],
-            "items": "channel",
-            "type": "array"
+            "default": {},
+            "type": "map",
+            "values": "channel"
         },
         "choppers": {
-            "default": [],
-            "items": "chopper",
-            "type": "array"
+            "default": {},
+            "type": "map",
+            "values": "chopper"
+        },
+        "device_name": {
+            "doc": "DAQmx name of device to address.",
+            "type": "string"
         },
         "loop_at_startup": {
             "doc": "If set to true, the daemon will begin to loop measure as soon as it starts.",
@@ -51,7 +55,7 @@
         },
         "timeout": {
             "default": 10.0,
-            "doc": "Timeout in seconds.",
+            "doc": "Timeout in seconds between each trigger edge.",
             "type": "float"
         },
         "trigger_source": {
@@ -60,6 +64,9 @@
         }
     },
     "doc": "Triggered NI-daqmx with multiplex.",
+    "hardware": [
+        "ni:pci-6251"
+    ],
     "links": {
         "bugtracker": "",
         "manufacturer": "",
@@ -123,6 +130,7 @@
             }
         },
         "get_measured_samples": {
+            "doc": "Get an array of shape (sample, shot).",
             "request": [],
             "response": "ndarray"
         },
@@ -228,8 +236,8 @@
     "trait": "is-sensor",
     "traits": [
         "has-measure-trigger",
-        "is-sensor",
-        "is-daemon"
+        "is-daemon",
+        "is-sensor"
     ],
     "types": [
         {
@@ -257,10 +265,6 @@
                     "default": true,
                     "name": "enabled",
                     "type": "boolean"
-                },
-                {
-                    "name": "physical_channel",
-                    "type": "string"
                 },
                 {
                     "default": false,
@@ -333,11 +337,6 @@
                     "default": false,
                     "name": "invert",
                     "type": "boolean"
-                },
-                {
-                    "default": false,
-                    "name": "physical_channel",
-                    "type": "string"
                 },
                 {
                     "name": "index",
