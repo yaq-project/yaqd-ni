@@ -223,7 +223,6 @@ class NiDaqmxTmux(Sensor):
         return self._sample_correspondances
 
     async def _measure(self):
-        await asyncio.sleep(0)
         samples = await self._loop.run_in_executor(None, self._measure_samples)
         shots = np.empty(
             [
@@ -327,15 +326,3 @@ class NiDaqmxTmux(Sensor):
         assert nshots > 0
         self._create_task(nshots)
         self._stale_task = True
-
-    async def update_state(self):
-        """Continually monitor and update the current daemon state."""
-        # If there is no state to monitor continuously, delete this function
-        while True:
-            # Perform any updates to internal state
-            self._busy = False
-            # There must be at least one `await` in this loop
-            # This one waits for something to trigger the "busy" state
-            # (Setting `self._busy = True)
-            # Otherwise, you can simply `await asyncio.sleep(0.01)`
-            await self._busy_sig.wait()
