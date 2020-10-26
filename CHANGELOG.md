@@ -6,8 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Fixed
-- removed bad update_state that amost completely broke ni-daqmx-tmux
+- removed bad update-state that amost completely broke ni-daqmx-tmux
 
+### Changed
+- regenerated avpr based on recent traits update
+ 
 ## [2020.10.0]
 
 ### Added
