@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 172c0a78facd8f938629f216c95507bbfeddfe5e
+    rev: 20.8b1
     hooks:
       - id: black
         name: black
@@ -10,13 +10,13 @@ repos:
         types: [python]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.782
+    rev: v0.790
     hooks:
       - id: mypy
         exclude: ^docs/conf.py
 
   - repo: https://gitlab.com/yaq/yaq-traits
-    rev: c080196487526513394e4c70e7d206fe0977054c
+    rev: v2020.10.1
     hooks:
       - id: yaq-traits-check
 
