@@ -1,4 +1,11 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.3.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: no-commit-to-branch
+        args: [-b, master]
+
   - repo: https://github.com/psf/black
     rev: 20.8b1
     hooks:
@@ -16,7 +23,7 @@ repos:
         exclude: ^docs/conf.py
 
   - repo: https://gitlab.com/yaq/yaq-traits
-    rev: v2020.10.1
+    rev: v2020.11.0
     hooks:
       - id: yaq-traits-check
 
