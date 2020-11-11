@@ -251,7 +251,7 @@ class NiDaqmxTmux(Sensor):
             # math
             shots[i] = signal_shots - baseline_shots
             if channel.invert:
-                shots[i] *= 1
+                shots[i] *= -1
             i += 1
         # choppers
         for chopper in self._choppers:
