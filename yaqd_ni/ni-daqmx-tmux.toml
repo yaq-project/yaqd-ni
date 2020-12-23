@@ -8,6 +8,9 @@ source = ""
 bugtracker = ""
 manufacturer = ""
 
+[installation]
+PyPI = "https://pypi.org/project/yaqd-ni"
+
 [[types]]
 type = "enum"
 name = "processing_method"
