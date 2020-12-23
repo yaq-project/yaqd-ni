@@ -73,6 +73,9 @@
     "hardware": [
         "ni:pci-6251"
     ],
+    "installation": {
+        "PyPI": "https://pypi.org/project/yaqd-ni"
+    },
     "links": {
         "bugtracker": "",
         "manufacturer": "",
@@ -252,9 +255,9 @@
         }
     },
     "traits": [
+        "has-measure-trigger",
         "is-daemon",
-        "is-sensor",
-        "has-measure-trigger"
+        "is-sensor"
     ],
     "types": [
         {
