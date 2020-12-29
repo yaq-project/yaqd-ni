@@ -223,7 +223,9 @@ class NiDaqmxTmux(Sensor):
         return self._sample_correspondances
 
     async def _measure(self):
-        samples = await self._loop.run_in_executor(None, self._measure_samples)
+        # this method runs syncronusly
+        while self._stale_task:  # assurance that task is not stale
+            samples = await self._loop.run_in_executor(None, self._measure_samples)
         shots = np.empty(
             [
                 len(self._channel_names) + len([c for c in self._choppers if c.enabled]),
@@ -317,12 +319,12 @@ class NiDaqmxTmux(Sensor):
         samples = samples.reshape((self._config["nsamples"], -1), order="F")
         if self._stale_task:
             self._create_task()
-            return self._measure_samples
+            return self._measure_samples()
         else:
             return samples
 
     def set_nshots(self, nshots):
         """Set number of shots."""
         assert nshots > 0
-        self._create_task(nshots)
+        self._state["nshots"] = nshots
         self._stale_task = True

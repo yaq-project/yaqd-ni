@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## Fixed
+- ni-daqmx-tmux set_nshot message was broken, now works
+
 ## [2020.12.0]
 
 ## Added
