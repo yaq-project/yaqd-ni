@@ -5,7 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-## Fixed
+## [2020.12.1]
+
+### Fixed
 - ni-daqmx-tmux set_nshot message was broken, now works
 
 ## [2020.12.0]
@@ -31,7 +33,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.0...master
+[Unreleased]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.1...master
+[2020.12.1]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.0...v2020.12.1
 [2020.12.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.11.1...v2020.12.0
 [2020.11.1]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.11.0...v2020.11.1
 [2020.11.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.10.0...v2020.11.0
