@@ -59,6 +59,14 @@
                 "string"
             ]
         },
+        "shots_processing_script": {
+            "default": null,
+            "doc": "Path to script for shots processing.",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
         "timeout": {
             "default": 10.0,
             "doc": "Timeout in seconds between each trigger edge.",
@@ -164,11 +172,6 @@
             "request": [],
             "response": "ndarray"
         },
-        "get_shots_processing_script": {
-            "doc": "Get the path to the currently applied shots processing script.",
-            "request": [],
-            "response": "string"
-        },
         "get_state": {
             "doc": "Get version of the running daemon",
             "origin": "is-daemon",
@@ -209,16 +212,6 @@
             ],
             "response": "null"
         },
-        "set_shots_processing_script": {
-            "doc": "Give the path to a shots processing script.",
-            "request": [
-                {
-                    "name": "path",
-                    "type": "string"
-                }
-            ],
-            "response": "null"
-        },
         "shutdown": {
             "doc": "Cleanly shutdown (or restart) daemon.",
             "origin": "is-daemon",
@@ -244,14 +237,6 @@
         "nshots": {
             "default": 100,
             "type": "int"
-        },
-        "shots_processing_script": {
-            "default": null,
-            "doc": "Path to script for shots processing.",
-            "type": [
-                "null",
-                "string"
-            ]
         }
     },
     "traits": [
