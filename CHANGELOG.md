@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2021.3.1]
+
 ### Fixed
 - Removed a bug that limited shots processing scripts to only modify existing daq channels.  
 - avpr composed with yaq-traits 2021.2.1
