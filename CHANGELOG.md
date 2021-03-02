@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed
+- shots processing script now in config only
+
 ## [2020.12.1]
 
 ### Fixed

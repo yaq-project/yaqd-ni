@@ -76,16 +76,16 @@ type = "map"
 values = "chopper"
 default = {}
 
+[config.shots_processing_script]
+type = ["null", "string"]
+doc = "Path to script for shots processing."
+default = "__null__"
+
 [state]
 
 [state.nshots]
 type = "int"
 default = 100
-
-[state.shots_processing_script]
-type = ["null", "string"]
-doc = "Path to script for shots processing."
-default = "__null__"
 
 [messages]
 
@@ -108,10 +108,3 @@ request = [{"name"="nshots", "type"="int"}]
 doc = "Returns an array of integers of length nsamples. Zero indicates rest sample. Postive indicates channel. Negative indicates chopper."
 response = "ndarray"
 
-[messages.get_shots_processing_script]
-doc = "Get the path to the currently applied shots processing script."
-response = "string"
-
-[messages.set_shots_processing_script]
-doc = "Give the path to a shots processing script."
-request = [{"name"="path", "type"="string"}]
