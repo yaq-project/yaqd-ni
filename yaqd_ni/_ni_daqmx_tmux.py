@@ -9,7 +9,7 @@ from typing import Dict, Any, List
 
 import numpy as np  # type: ignore
 
-from yaqd_core import Sensor
+from yaqd_core import HasMeasureTrigger, IsSensor, IsDaemon
 
 
 def process_samples(method, samples):
@@ -54,7 +54,7 @@ class Chopper:
     index: int
 
 
-class NiDaqmxTmux(Sensor):
+class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
     _kind = "ni-daqmx-tmux"
 
     def __init__(self, name, config, config_filepath):
@@ -66,6 +66,7 @@ class NiDaqmxTmux(Sensor):
             self._channels.append(channel)
         self._channel_names = [c.name for c in self._channels if c.enabled]  # expected by parent
         self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
+        self._raw_channel_names = [c.name for c in self._channels if c.enabled]  # from config only
         # choppers
         self._choppers = []
         for k, d in self._config["choppers"].items():
@@ -224,11 +225,14 @@ class NiDaqmxTmux(Sensor):
 
     async def _measure(self):
         # this method runs syncronusly
-        while self._stale_task:  # assurance that task is not stale
+        while True:
             samples = await self._loop.run_in_executor(None, self._measure_samples)
+            if not self._stale_task:
+                break
+
         shots = np.empty(
             [
-                len(self._channel_names) + len([c for c in self._choppers if c.enabled]),
+                len(self._raw_channel_names) + len([c for c in self._choppers if c.enabled]),
                 self._state["nshots"],
             ]
         )
@@ -244,12 +248,12 @@ class NiDaqmxTmux(Sensor):
             signal_shots = process_samples(channel.signal_method, signal_samples)
             # baseline
             if not channel.use_baseline:
-                baseline = 0
-                continue
-            idxs = self._sample_correspondances == channel_index + 1
-            idxs[: channel.signal_stop + 1] = False
-            baseline_samples = samples[idxs]
-            baseline_shots = process_samples(channel.baseline_method, baseline_samples)
+                baseline_shots = 0
+            else:
+                idxs = self._sample_correspondances == channel_index + 1
+                idxs[: channel.signal_stop + 1] = False
+                baseline_samples = samples[idxs]
+                baseline_shots = process_samples(channel.baseline_method, baseline_samples)
             # math
             shots[i] = signal_shots - baseline_shots
             if channel.invert:
@@ -273,10 +277,10 @@ class NiDaqmxTmux(Sensor):
         directory = os.path.dirname(path)
         f, p, d = imp.find_module(name, [directory])
         processing_module = imp.load_module(name, f, p, d)
-        kinds = ["channel" for _ in self._channel_names] + [
+        kinds = ["channel" for _ in self._raw_channel_names] + [
             "chopper" for c in self._choppers if c.enabled
         ]
-        names = self._channel_names + [c.name for c in self._choppers if c.enabled]
+        names = self._raw_channel_names + [c.name for c in self._choppers if c.enabled]
         out = processing_module.process(shots, names, kinds)
         if len(out) == 3:
             out, out_names, out_signed = out
@@ -284,6 +288,7 @@ class NiDaqmxTmux(Sensor):
             out, out_names = out
             out_signed = False
         # finish
+        self._channel_names = out_names
         self._samples = samples
         self._shots = shots
         out = {k: v for k, v in zip(self._channel_names, out)}
