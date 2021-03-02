@@ -5,8 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- Removed a bug that limited shots processing scripts to only modify existing daq channels.  
+- avpr composed with yaq-traits 2021.2.1
+- Allow for channels with no baseline
+
 ### Changed
 - shots processing script now in config only
+- shots processing script can create arbitrary channels
 
 ## [2020.12.1]
 
