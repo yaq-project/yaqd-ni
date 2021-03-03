@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2021.3.0]
+
 ### Fixed
 - Removed a bug that limited shots processing scripts to only modify existing daq channels.  
 - avpr composed with yaq-traits 2021.2.1
@@ -42,7 +44,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.1...master
+[Unreleased]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.0...master
+[2021.3.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.1....v2021.3.0
 [2020.12.1]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.0...v2020.12.1
 [2020.12.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.11.1...v2020.12.0
 [2020.11.1]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.11.0...v2020.11.1
