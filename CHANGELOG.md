@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-## [2021.3.1]
+## [2021.3.0]
 
 ### Fixed
 - Removed a bug that limited shots processing scripts to only modify existing daq channels.  
