@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed bug where chopper correspondence was off by one.
+
 ## [2021.3.0]
 
 ### Fixed

@@ -114,7 +114,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         for chopper_index, chopper in enumerate(self._choppers):
             if not chopper.enabled:
                 continue
-            self._sample_correspondances[chopper.index] = -chopper_index
+            self._sample_correspondances[chopper.index] = -chopper_index - 1
 
     def _create_task(self):
         import PyDAQmx  # type: ignore
