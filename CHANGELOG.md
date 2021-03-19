@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2021.3.2]
+
+### Changed
+- Provide new method in avpr defined in core
+
 ## [2021.3.1]
 
 ### Fixed
@@ -13,7 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [2021.3.0]
 
 ### Fixed
-- Removed a bug that limited shots processing scripts to only modify existing daq channels.  
+- Removed a bug that limited shots processing scripts to only modify existing daq channels.
 - avpr composed with yaq-traits 2021.2.1
 - Allow for channels with no baseline
 
@@ -49,7 +54,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.1...master
+[Unreleased]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.2...master
+[2021.3.2]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.1....v2021.3.2
 [2021.3.1]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.0....v2021.3.1
 [2021.3.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.1....v2021.3.0
 [2020.12.1]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.0...v2020.12.1
