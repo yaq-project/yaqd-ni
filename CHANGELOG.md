@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed
+- toml dependency now explicity specified
+
 ## [2021.3.2]
 
 ### Changed
