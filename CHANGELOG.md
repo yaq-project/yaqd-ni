@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2021.10.0]
+
 ### Changed
 - toml dependency now explicity specified
+- rerender avpr with proper support for null default in types
 
 ## [2021.3.2]
 
@@ -57,7 +60,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.2...master
+[Unreleased]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.10.0...master
+[2021.10.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.2....v2021.10.0
 [2021.3.2]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.1....v2021.3.2
 [2021.3.1]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.0....v2021.3.1
 [2021.3.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.1....v2021.3.0
