@@ -108,3 +108,11 @@ request = [{"name"="nshots", "type"="int"}]
 doc = "Returns an array of integers of length nsamples. Zero indicates rest sample. Postive indicates channel. Negative indicates chopper."
 response = "ndarray"
 
+[properties]
+
+[properties.nshots]
+getter = "get_nshots"
+setter = "set_nshots"
+type = "int"
+control_kind = "hinted"
+record_kind = "metadata"
