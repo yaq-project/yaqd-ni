@@ -38,6 +38,9 @@ gui = ["pyqtgraph", "qtpy", "qtypes", "yaqc"]
 yaqd-ni-daqmx-tmux = "yaqd_ni._ni_daqmx_tmux:NiDaqmxTmux.main"
 yaqd-ni-daqmx-tmux-gui = "yaqd_ni._ni_daqmx_tmux_gui:main"
 
+[tool.flit.entrypoints."yaqc_qtpy.main.ni_daqmx_tmux"]
+ni_daqmx_tmux = "yaqd_ni._ni_daqmx_tmux_gui:ConfigWidget"
+
 [tool.black]
 line-length = 99
 target-version = ['py37', 'py38']
