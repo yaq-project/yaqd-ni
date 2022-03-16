@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- ms wait property to wait prior to starting aqcuisition
+
 ## [2022.2.0]
 
 ### Added

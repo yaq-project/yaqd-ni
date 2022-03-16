@@ -87,6 +87,10 @@ default = "__null__"
 type = "int"
 default = 100
 
+[state.ms_wait]
+type = "int"
+default = 0
+
 [messages]
 
 [messages.get_measured_samples]
@@ -104,6 +108,14 @@ response = "int"
 doc = "Set the number of shots to acquire."
 request = [{"name"="nshots", "type"="int"}]
 
+[messages.get_ms_wait]
+doc = "Get the number of milliseconds to wait before acquiring."
+response = "int"
+
+[messages.set_ms_wait]
+doc = "Set the number of milliseconds to wait before acquiring."
+request = [{"name"="ms_wait", "type"="int"}]
+
 [messages.get_sample_correspondances]
 doc = "Returns an array of integers of length nsamples. Zero indicates rest sample. Postive indicates channel. Negative indicates chopper."
 response = "ndarray"
@@ -115,4 +127,11 @@ getter = "get_nshots"
 setter = "set_nshots"
 type = "int"
 control_kind = "hinted"
+record_kind = "metadata"
+
+[properties.ms_wait]
+getter = "get_ms_wait"
+setter = "set_ms_wait"
+type = "int"
+control_kind = "normal"
 record_kind = "metadata"

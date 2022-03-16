@@ -220,10 +220,14 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
     def get_nshots(self):
         return self._state["nshots"]
 
+    def get_ms_wait(self):
+        return self._state["ms_wait"]
+
     def get_sample_correspondances(self):
         return self._sample_correspondances
 
     async def _measure(self):
+        await asyncio.sleep(self._state["ms_wait"] / 1000.0)
         # this method runs syncronusly
         while True:
             samples = await self._loop.run_in_executor(None, self._measure_samples)
@@ -333,3 +337,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         assert nshots > 0
         self._state["nshots"] = nshots
         self._stale_task = True
+
+    def set_ms_wait(self, ms_wait):
+        """Set number of shots."""
+        self._state["ms_wait"] = ms_wait
