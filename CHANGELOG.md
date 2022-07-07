@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2022.7.0]
+
 ### Changed
 - Updated gui to work with newer qtypes, integrate with yaqc-qtpy
 
@@ -73,15 +75,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2022.3.0...main
-[2022.3.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2022.2.0....v2022.3.0
-[2022.2.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.10.0....v2022.2.0
-[2021.10.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.2....v2021.10.0
-[2021.3.2]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.1....v2021.3.2
-[2021.3.1]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2021.3.0....v2021.3.1
-[2021.3.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.1....v2021.3.0
-[2020.12.1]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.12.0...v2020.12.1
-[2020.12.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.11.1...v2020.12.0
-[2020.11.1]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.11.0...v2020.11.1
-[2020.11.0]: https://gitlab.com/yaq/yaqd-ni/-/compare/v2020.10.0...v2020.11.0
-[2020.10.0]: https://gitlab.com/yaq/yaqd-ni/-/tags/v2020.10.0
+[Unreleased]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.7.0...main
+[2022.7.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.2.0....v2022.7.0
+[2022.3.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.2.0....v2022.3.0
+[2022.2.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2021.10.0....v2022.2.0
+[2021.10.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2021.3.2....v2021.10.0
+[2021.3.2]: https://github.com/yaq-project/yaqd-ni/-/compare/v2021.3.1....v2021.3.2
+[2021.3.1]: https://github.com/yaq-project/yaqd-ni/-/compare/v2021.3.0....v2021.3.1
+[2021.3.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2020.12.1....v2021.3.0
+[2020.12.1]: https://github.com/yaq-project/yaqd-ni/-/compare/v2020.12.0...v2020.12.1
+[2020.12.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2020.11.1...v2020.12.0
+[2020.11.1]: https://github.com/yaq-project/yaqd-ni/-/compare/v2020.11.0...v2020.11.1
+[2020.11.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2020.10.0...v2020.11.0
+[2020.10.0]: https://github.com/yaq-project/yaqd-ni/-/tags/v2020.10.0
