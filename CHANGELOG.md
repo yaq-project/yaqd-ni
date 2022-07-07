@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed
+- Updated gui to work with newer qtypes, integrate with yaqc-qtpy
+
 ## [2022.3.0]
 
 ### Added
