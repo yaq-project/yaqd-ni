@@ -12,3 +12,6 @@ yaq daemons for NI hardware
 This package contains the following daemon(s):
 
 - https://yaq.fyi/daemons/daqmx-tmux
+
+## maintainers
+- [Blaise Thompson](https://github.com/untzag)
