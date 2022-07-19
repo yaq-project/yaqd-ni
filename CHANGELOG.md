@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2022.7.1]
+
 ### Changed
 - daqmx-tmux-gui no longer does a single measurement at startup
 
@@ -78,7 +80,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.7.0...main
+[Unreleased]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.7.1...main
+[2022.7.1]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.7.0....v2022.7.1
 [2022.7.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.2.0....v2022.7.0
 [2022.3.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.2.0....v2022.3.0
 [2022.2.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2021.10.0....v2022.2.0
