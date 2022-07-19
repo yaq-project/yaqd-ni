@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed
+- daqmx-tmux-gui no longer does a single measurement at startup
+
 ## [2022.7.0]
 
 ### Changed
