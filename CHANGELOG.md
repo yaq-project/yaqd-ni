@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2022.11.0]
+
+### Added
+- example yaq configs
+- document support for more daq cards
+
 ## [2022.7.1]
 
 ### Changed
@@ -80,7 +86,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.7.1...main
+[Unreleased]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.11.0...main
+[2022.11.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.7.1....v2022.11.0
 [2022.7.1]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.7.0....v2022.7.1
 [2022.7.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.2.0....v2022.7.0
 [2022.3.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.2.0....v2022.3.0

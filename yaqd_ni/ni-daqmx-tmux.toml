@@ -1,12 +1,13 @@
 protocol = "ni-daqmx-tmux"
 doc = "Triggered NI-daqmx with multiplex."
 traits = ["is-sensor", "has-measure-trigger", "is-daemon"]
-hardware = ["ni:pci-6251"]
+hardware = ["ni:pci-6251", "ni:pci-6361"]
 
 [links]
-source = ""
-bugtracker = ""
+source = "https://github.com/yaq-project/yaqd-ni"
+bugtracker = "https://github.com/yaq-project/yaqd-ni/issues"
 manufacturer = ""
+example-configs = "https://github.com/yaq-project/yaqd-ni/tree/main/example-yaq-configs/ni-daqmx-tmux"
 
 [installation]
 PyPI = "https://pypi.org/project/yaqd-ni"
