@@ -95,7 +95,6 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
         # finish
         self._stale_task = True
-        self._channel_signs = [False for c in self._channels]
         self._create_sample_correspondances()
         self._create_task()
 
@@ -235,8 +234,10 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
     def get_nshots(self):
         return self._state["nshots"]
 
-    def get_channel_signs(self) -> List[bool]:
-        return self._channel_signs
+    def get_channel_signs(self) -> Dict[str, bool]:
+        return getattr(
+            self, "_channel_signs", {n: False for n in self._channel_names}
+        )
 
     def get_ms_wait(self):
         return self._state["ms_wait"]
@@ -308,10 +309,10 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
             out, out_names, out_signed = out
         else:
             out, out_names = out
-            out_signed = False
+            out_signed = [False for i in out_names]
         # finish
         self._channel_names = out_names
-        self._channel_signs = out_signed
+        self._channel_signs = {n:s for n,s in zip(out_names, out_signed)}
         self._samples = samples
         self._shots = shots
         out = {k: v for k, v in zip(self._channel_names, out)}

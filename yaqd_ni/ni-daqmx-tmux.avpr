@@ -151,11 +151,12 @@
             }
         },
         "get_channel_signs": {
+            "doc": "Returns a map of each channel to a boolean.  \\\n\tTrue indicates channel can have both positive and negative signal. \\\n\tFalse indicates channel values either positive or negative.  \\\n\tUseful as a plotting hint.\n\t",
             "request": [],
             "response": [
                 {
-                    "items": "boolean",
-                    "type": "array"
+                    "type": "map",
+                    "values": "boolean"
                 }
             ]
         },

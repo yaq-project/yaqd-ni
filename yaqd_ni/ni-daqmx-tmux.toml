@@ -95,7 +95,12 @@ default = 0
 [messages]
 
 [messages.get_channel_signs]
-response = [{"type"="array", "items"="boolean"}]
+doc = """Returns a map of each channel to a boolean.  \\
+	True indicates channel can have both positive and negative signal. \\
+	False indicates channel values either positive or negative.  \\
+	Useful as a plotting hint.
+	"""
+response = [{"type"="map", "values"="boolean"}]
 
 [messages.get_measured_samples]
 response = "ndarray"
