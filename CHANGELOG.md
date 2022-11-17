@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- `get_channel_signs` message: Clients have access to whether channels are signed
+
 ## [2021.3.2]
 
 ### Changed

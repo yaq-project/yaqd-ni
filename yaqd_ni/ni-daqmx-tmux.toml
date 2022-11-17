@@ -89,6 +89,9 @@ default = 100
 
 [messages]
 
+[messages.get_channel_signs]
+response = [{"type"="array", "items"="boolean"}]
+
 [messages.get_measured_samples]
 response = "ndarray"
 doc = "Get an array of shape (sample, shot)."
@@ -107,4 +110,13 @@ request = [{"name"="nshots", "type"="int"}]
 [messages.get_sample_correspondances]
 doc = "Returns an array of integers of length nsamples. Zero indicates rest sample. Postive indicates channel. Negative indicates chopper."
 response = "ndarray"
+
+[properties]
+
+[properties.nshots]
+getter = "get_nshots"
+setter = "set_nshots"
+control_kind = "hinted"
+record_kind = "metadata"
+type = "int"
 

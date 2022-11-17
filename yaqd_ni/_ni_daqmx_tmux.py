@@ -80,6 +80,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         assert len(set(x)) == len(x)
         # finish
         self._stale_task = True
+        self._channel_signs = [False for c in self._channels]
         self._create_sample_correspondances()
         self._create_task()
         self.measure()
@@ -220,6 +221,9 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
     def get_nshots(self):
         return self._state["nshots"]
 
+    def get_channel_signs(self) -> List[bool]:
+        return self._channel_signs
+
     def get_sample_correspondances(self):
         return self._sample_correspondances
 
@@ -289,6 +293,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
             out_signed = False
         # finish
         self._channel_names = out_names
+        self._channel_signs = out_signed
         self._samples = samples
         self._shots = shots
         out = {k: v for k, v in zip(self._channel_names, out)}
