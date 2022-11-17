@@ -235,9 +235,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         return self._state["nshots"]
 
     def get_channel_signs(self) -> Dict[str, bool]:
-        return getattr(
-            self, "_channel_signs", {n: False for n in self._channel_names}
-        )
+        return getattr(self, "_channel_signs", {n: False for n in self._channel_names})
 
     def get_ms_wait(self):
         return self._state["ms_wait"]
@@ -312,7 +310,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
             out_signed = [False for i in out_names]
         # finish
         self._channel_names = out_names
-        self._channel_signs = {n:s for n,s in zip(out_names, out_signed)}
+        self._channel_signs = {n: s for n, s in zip(out_names, out_signed)}
         self._samples = samples
         self._shots = shots
         out = {k: v for k, v in zip(self._channel_names, out)}
