@@ -129,9 +129,9 @@ response = "ndarray"
 [properties.nshots]
 getter = "get_nshots"
 setter = "set_nshots"
+type = "int"
 control_kind = "hinted"
 record_kind = "metadata"
-type = "int"
 
 [properties.ms_wait]
 getter = "get_ms_wait"
