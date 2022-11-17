@@ -2,6 +2,7 @@
 
 import sys
 import pathlib
+import time
 
 from qtpy import QtCore, QtGui, QtWidgets  # type: ignore
 import pyqtgraph as pg  # type: ignore
@@ -26,6 +27,7 @@ resolution[10.0] = 320.0
 class Channel:
     def __init__(
         self,
+        channel,
         enabled,
         name,
         invert,
@@ -41,49 +43,54 @@ class Channel:
         range,
         nsamples,
     ):
-        self.enabled = qtypes.Bool(value=enabled)
-        self.name = qtypes.String(value=name)
-        self.physical_correspondance = qtypes.Number(
-            decimals=0, limits=qtypes.NumberLimits(0, 7, None)
+        self.enabled = qtypes.Bool("Enabled", disabled=True, value=enabled)
+        self.name = qtypes.String(channel, disabled=True, value=name)
+        self.physical_correspondance = qtypes.Integer(
+            "Physical correspondance", disabled=True, minimum=0, maximum=7
         )
         allowed_ranges = ["%0.1f (%0.1f)" % (r, resolution[r]) for r in ranges]
-        self.range = qtypes.Enum(allowed_values=allowed_ranges)
+        self.range = qtypes.Enum("Range", disabled=True, allowed=allowed_ranges)
         # TODO: resolution display
-        self.invert = qtypes.Bool(value=invert)
-        sample_limits = qtypes.NumberLimits(0, nsamples - 1, None)
-        self.signal_start_index = qtypes.Number(
-            decimals=0, limits=sample_limits, value=signal_start
+        self.invert = qtypes.Bool("invert", disabled=True, value=invert)
+        sample_limits = {"minimum": 0, "maximum": nsamples - 1}
+        self.signal_start_index = qtypes.Integer(
+            "signal start index", disabled=True, value=signal_start, **sample_limits
         )
-        self.signal_stop_index = qtypes.Number(decimals=0, limits=sample_limits, value=signal_stop)
-        self.signal_pre_index = qtypes.Number(
-            decimals=0, limits=sample_limits, value=signal_presample
+        self.signal_stop_index = qtypes.Integer(
+            "signal stop index", disabled=True, value=signal_stop, **sample_limits
         )
+        self.signal_pre_index = qtypes.Integer(
+            "signal pre index", disabled=True, value=signal_presample, **sample_limits
+        )
+
         processing_methods = ["Average", "Sum", "Min", "Max"]  # TODO: source from avpr
-        self.signal_method = qtypes.Enum(allowed_values=processing_methods, value=signal_method)
-        self.use_baseline = qtypes.Bool(value=use_baseline)
-        self.baseline_start_index = qtypes.Number(
-            decimals=0, limits=sample_limits, value=baseline_start
+        self.signal_method = qtypes.Enum(
+            "processing", disabled=True, allowed=processing_methods, value=signal_method
         )
-        self.baseline_stop_index = qtypes.Number(
-            decimals=0, limits=sample_limits, value=baseline_stop
+        self.use_baseline = qtypes.Bool("Use Baseline", disabled=True, value=use_baseline)
+        self.baseline_start_index = qtypes.Integer(
+            "baseline start index", disabled=True, value=baseline_start, **sample_limits
         )
-        self.baseline_pre_index = qtypes.Number(
-            decimals=0, limits=sample_limits, value=baseline_presample
+        self.baseline_stop_index = qtypes.Integer(
+            "baseline stop index", disabled=True, value=baseline_stop, **sample_limits
+        )
+        self.baseline_pre_index = qtypes.Integer(
+            "baseline pre index", disabled=True, value=baseline_presample, **sample_limits
         )
         self.baseline_method = qtypes.Enum(
-            allowed_values=processing_methods, value=baseline_method
+            "processing", disabled=True, allowed=processing_methods, value=baseline_method
         )
         # signals
-        self.use_baseline.updated.connect(lambda: self.on_use_baseline())
+        self.use_baseline.updated_connect(lambda x: self.on_use_baseline())
         self.on_use_baseline()
 
     @property
     def baseline_start(self):
-        return self.baseline_start_index.get() - self.baseline_pre_index.get()
+        return self.baseline_start_index.get_value() - self.baseline_pre_index.get_value()
 
     @property
     def baseline_stop(self):
-        return self.baseline_stop_index.get()
+        return self.baseline_stop_index.get_value()
 
     def get_range(self):
         """
@@ -92,55 +99,59 @@ class Channel:
         tuple
             (minimum_voltage, maximum_voltage)
         """
-        r = ranges[self.range.get_index()]
+        allowed = self.range.get()["allowed"]
+        r = ranges[allowed.index(self.range.get_value())]
         return -r, r
 
-    def get_widget(self):
-        self.input_table = qtypes.widgets.InputTable()
-        self.input_table.append(self.name, "Name")
-        self.input_table.append(self.range, "Range +/-V, (uV/level)")
+    def get_widget(self, tree):
+        self.tree_widget = tree
+        self.tree_widget.append(self.name)
+        self.name.append(self.range)
         # TODO: resolution display
-        self.input_table.append(self.invert, "Invert")
-        self.input_table.append(self.signal_start_index, "Signal Start")
-        self.input_table.append(self.signal_stop_index, "Signal Stop")
-        self.input_table.append(self.signal_pre_index, "Signal Presample")
-        self.input_table.append(self.signal_method, "Signal Method")
-        self.input_table.append(self.use_baseline, "Use Baseline")
-        self.input_table.append(self.baseline_start_index, "Baseline Start")
-        self.input_table.append(self.baseline_stop_index, "Baseline Stop")
-        self.input_table.append(self.baseline_pre_index, "Baseline Presample")
-        self.input_table.append(self.baseline_method, "Baseline Method")
-        return self.input_table
+        self.name.append(self.invert)
+        self.name.append(self.signal_start_index)
+        self.name.append(self.signal_stop_index)
+        self.name.append(self.signal_pre_index)
+        self.name.append(self.signal_method)
+        self.name.append(self.use_baseline)
+        self.name.append(self.baseline_start_index)
+        self.name.append(self.baseline_stop_index)
+        self.name.append(self.baseline_pre_index)
+        self.name.append(self.baseline_method)
+        return self.name
 
     def on_use_baseline(self):
-        self.baseline_method.set_disabled(not self.use_baseline.get())
-        self.baseline_start_index.set_disabled(not self.use_baseline.get())
-        self.baseline_stop_index.set_disabled(not self.use_baseline.get())
-        self.baseline_pre_index.set_disabled(not self.use_baseline.get())
+        return
+        # For when writing config is a thing
+        self.baseline_method.set({"disabled": not self.use_baseline.get_value()})
+        self.baseline_start_index.set({"disabled": not self.use_baseline.get_value()})
+        self.baseline_stop_index.set({"disabled": not self.use_baseline.get_value()})
+        self.baseline_pre_index.set({"disabled": not self.use_baseline.get_value()})
 
     @property
     def signal_start(self):
-        return self.signal_start_index.get() - self.signal_pre_index.get()
+        return self.signal_start_index.get_value() - self.signal_pre_index.get_value()
 
     @property
     def signal_stop(self):
-        return self.signal_stop_index.get()
+        return self.signal_stop_index.get_value()
 
 
 class Chopper:
-    def __init__(self, index, enabled, invert, name, nsamples):
-        self.enabled = qtypes.Bool(value=enabled)
-        self.name = qtypes.String(value=name)
-        self.invert = qtypes.Bool(value=invert)
-        sample_limits = qtypes.NumberLimits(0, nsamples - 1, None)
-        self.index = qtypes.Number(value=index, decimals=0, limits=sample_limits)
+    def __init__(self, channel, index, enabled, invert, name, nsamples):
+        self.enabled = qtypes.Bool("Enabled", disabled=True, value=enabled)
+        self.name = qtypes.String(channel, disabled=True, value=name)
+        self.invert = qtypes.Bool("Invert", disabled=True, value=invert)
+        self.index = qtypes.Integer(
+            "Index", disabled=True, value=index, minimum=0, maximum=nsamples - 1
+        )
 
-    def get_widget(self):
-        self.input_table = qtypes.widgets.InputTable()
-        self.input_table.append(self.name, "Name")
-        self.input_table.append(self.invert, "Invert")
-        self.input_table.append(self.index, "Index")
-        return self.input_table
+    def get_widget(self, tree):
+        self.tree_widget = tree
+        self.tree_widget.append(self.name)
+        self.name.append(self.invert)
+        self.name.append(self.index)
+        return self.name
 
     def save(self):
         for obj in self.properties:
@@ -148,50 +159,51 @@ class Chopper:
 
 
 class ConfigWidget(QtWidgets.QWidget):
-    def __init__(self, port):
+    def __init__(self, qclient):
         super().__init__()
-        self.port = port
-        self.client = yaqc.Client(self.port)
-        self.client.measure(loop=True)
-        config = toml.loads(self.client.get_config())
+        self.client = qclient
+        task = self.client.get_config()
+        while not task.finished:
+            time.sleep(0.1)
+        config = toml.loads(task.result)
         self.nsamples = config["nsamples"]
         self.channels = {}
         for k, d in config["channels"].items():
             if d["name"] is None:
                 d["name"] = k
-            self.channels[k] = Channel(**d, nsamples=self.nsamples)
+            self.channels[k] = Channel(k, **d, nsamples=self.nsamples)
         self.choppers = {}
         for k, d in config["choppers"].items():
             if d["name"] is None:
                 d["name"] = k
-            self.choppers[k] = Chopper(**d, nsamples=self.nsamples)
+            self.choppers[k] = Chopper(k, **d, nsamples=self.nsamples)
+
         self.create_frame()
-        self.poll_timer = QtCore.QTimer()
-        self.poll_timer.start(100)  # milliseconds
-        self.poll_timer.timeout.connect(self.update)
+        self.client.get_measured_samples.finished.connect(self.update_measured_samples)
+        self.client.get_measured_shots.finished.connect(self.update_measured_shots)
+        self.rest_channel.set_value(config["rest_channel"])
+        self.client._poll_timer.timeout.connect(self.poll)
+
+    def poll(self):
+        self.client.get_measured_samples()
+        self.client.get_measured_shots()
 
     def create_frame(self):
         self.setLayout(QtWidgets.QHBoxLayout())
         self.layout().setContentsMargins(0, 10, 0, 0)
         self.tabs = QtWidgets.QTabWidget()
         # samples tab
-        samples_widget = QtWidgets.QWidget()
-        samples_box = QtWidgets.QHBoxLayout()
-        samples_box.setContentsMargins(0, 10, 0, 0)
-        samples_widget.setLayout(samples_box)
+        samples_widget = QtWidgets.QSplitter()
         self.tabs.addTab(samples_widget, "Samples")
-        self.create_samples_tab(samples_box)
+        self.create_samples_tab(samples_widget)
         # shots tab
-        shots_widget = QtWidgets.QWidget()
-        shots_box = QtWidgets.QHBoxLayout()
-        shots_box.setContentsMargins(0, 10, 0, 0)
-        shots_widget.setLayout(shots_box)
+        shots_widget = QtWidgets.QSplitter()
         self.tabs.addTab(shots_widget, "Shots")
-        self.create_shots_tab(shots_box)
+        self.create_shots_tab(shots_widget)
         # finish
         self.layout().addWidget(self.tabs)
-        self.samples_channel_combo.updated.connect(self.update_samples_tab)
-        self.samples_chopper_combo.updated.connect(self.update_samples_tab)
+        self.samples_channel_combo.updated_connect(self.update_samples_tab)
+        self.samples_chopper_combo.updated_connect(self.update_samples_tab)
         self.update_samples_tab()
 
     def create_samples_tab(self, layout):
@@ -239,65 +251,41 @@ class ConfigWidget(QtWidgets.QWidget):
         style = pg.PlotDataItem(pen="b")
         legend.addItem(style, "chopper index")
         # vertical line -------------------------------------------------------
-        line = qtypes.widgets.Line("V")
-        layout.addWidget(line)
         # settings area -------------------------------------------------------
         # container widget / scroll area
-        settings_container_widget = QtWidgets.QWidget()
-        settings_scroll_area = qtypes.widgets.ScrollArea()
-        settings_scroll_area.setWidget(settings_container_widget)
-        settings_container_widget.setLayout(QtWidgets.QVBoxLayout())
-        settings_layout = settings_container_widget.layout()
-        settings_layout.setContentsMargins(5, 5, 5, 5)
-        layout.addWidget(settings_scroll_area)
-        input_table = qtypes.widgets.InputTable()
-        input_table.append(None, "Settings")
-        self.rest_channel = qtypes.String(name="Rest Channel")
-        input_table.append(self.rest_channel)
-        settings_layout.addWidget(input_table)
-        # channels
-        line = qtypes.widgets.Line("H")
-        settings_layout.addWidget(line)
+        root_item = qtypes.Null()
+        self.rest_channel = qtypes.String("Rest Channel", disabled=True)
+        root_item.append(self.rest_channel)
         # channel_combobox
         allowed_values = list(self.channels.keys())
-        self.samples_channel_combo = qtypes.Enum(allowed_values=allowed_values, name="Channels")
-        input_table = qtypes.widgets.InputTable()
-        input_table.append(self.samples_channel_combo)
-        settings_layout.addWidget(input_table)
+        self.samples_channel_combo = qtypes.Enum("Channels", allowed=allowed_values)
+        root_item.append(self.samples_channel_combo)
         # channel widgets
         self.channel_widgets = []
         for channel in self.channels.values():
-            widget = channel.get_widget()
-            settings_layout.addWidget(widget)
-            # widget.hide()
+            widget = channel.get_widget(self.samples_channel_combo)
             self.channel_widgets.append(widget)
         # apply button
-        self.apply_channel_button = qtypes.widgets.PushButton("APPLY CHANGES", background="green")
-        self.apply_channel_button.clicked.connect(self.write_config)
-        settings_layout.addWidget(self.apply_channel_button)
-        # dividing line
-        line = qtypes.widgets.Line("H")
-        settings_layout.addWidget(line)
+        # self.apply_channel_button = qtypes.widgets.PushButton("APPLY CHANGES", background="green")
+        # self.apply_channel_button.clicked.connect(self.write_config)
+        # layout.addWidget(self.apply_channel_button)
         # chopper_combobox
         allowed_values = list(self.choppers.keys())
-        self.samples_chopper_combo = qtypes.Enum(allowed_values=allowed_values, name="Chopper")
-        input_table = qtypes.widgets.InputTable()
-        input_table.append(self.samples_chopper_combo)
-        settings_layout.addWidget(input_table)
+        self.samples_chopper_combo = qtypes.Enum("Chopper", allowed=allowed_values)
+        root_item.append(self.samples_chopper_combo)
         # chopper widgets
         self.chopper_widgets = []
         for chopper in self.choppers.values():
-            widget = chopper.get_widget()
-            settings_layout.addWidget(widget)
-            widget.hide()
+            widget = chopper.get_widget(self.samples_chopper_combo)
             self.chopper_widgets.append(widget)
         # apply button
-        self.apply_chopper_button = qtypes.widgets.PushButton("APPLY CHANGES", background="green")
-        self.apply_chopper_button.clicked.connect(self.write_config)
-        settings_layout.addWidget(self.apply_chopper_button)
-        # finish --------------------------------------------------------------
-        settings_layout.addStretch(1)
+        # self.apply_chopper_button = qtypes.widgets.PushButton("APPLY CHANGES", background="green")
+        # self.apply_chopper_button.clicked.connect(self.write_config)
+        # layout.addWidget(self.apply_chopper_button)
         self.sample_xi = np.arange(self.nsamples)
+        tree_widget = qtypes.TreeWidget(root_item)
+        layout.addWidget(tree_widget)
+        tree_widget.structure.expand(1)
 
     def create_shots_tab(self, layout):
         # container widget
@@ -311,88 +299,74 @@ class ConfigWidget(QtWidgets.QWidget):
         self.shots_plot_scatter = self.shots_plot_widget.add_scatter()
         self.shots_plot_widget.set_labels(xlabel="shot", ylabel="volts")
         display_layout.addWidget(self.shots_plot_widget)
-        # vertical line
-        line = qtypes.widgets.Line("V")
-        layout.addWidget(line)
         # settings
         # container widget / scroll area
-        settings_container_widget = QtWidgets.QWidget()
-        settings_scroll_area = qtypes.widgets.ScrollArea()
-        settings_scroll_area.setWidget(settings_container_widget)
-        settings_container_widget.setLayout(QtWidgets.QVBoxLayout())
-        settings_layout = settings_container_widget.layout()
-        settings_layout.setContentsMargins(5, 5, 5, 5)
-        layout.addWidget(settings_scroll_area)
         # input table
-        input_table = qtypes.widgets.InputTable()
-        input_table.append(None, "Display")
-        self.shot_channel_combo = qtypes.Enum(name="Channel")
-        input_table.append(self.shot_channel_combo)
-        self.shot_channel_combo.updated.connect(self.on_shot_channel_updated)
-        input_table.append(None, "Settings")
-        self.nshots = qtypes.Number(name="Shots", value=self.client.get_nshots(), decimals=0)
-        self.nshots.updated.connect(self.on_nshots_updated)
-        input_table.append(self.nshots)
-        self.shots_processing_module_path = qtypes.Filepath(name="Shots Processing")
-        input_table.append(self.shots_processing_module_path)
-        settings_layout.addWidget(input_table)
+        root_item = qtypes.Null()
+        self.shot_channel_combo = qtypes.Enum(
+            "Channel", allowed=list(self.channels.keys()) + list(self.choppers.keys())
+        )
+        root_item.append(self.shot_channel_combo)
+        self.shot_channel_combo.updated_connect(self.on_shot_channel_updated)
+        self.nshots = qtypes.Integer("Shots", value=0, minimum=0)
+        self.client.get_nshots.finished.connect(self.nshots.set_value)
+        self.client.get_nshots()
+        self.nshots.edited_connect(self.on_nshots_updated)
+        root_item.append(self.nshots)
+        # self.shots_processing_module_path = qtypes.Filepath(name="Shots Processing")
+        # root_item.append(self.shots_processing_module_path)
+        tree_widget = qtypes.TreeWidget(root_item)
+        layout.addWidget(tree_widget)
         # finish
-        settings_layout.addStretch(1)
-        self.shot_channel_combo.updated.emit()
 
     def write_config(self):
         # create dictionary, starting from existing
-        config = toml.loads(self.client.get_config())
+        config = {}
         # channels
         for k, c in config["channels"].items():
             channel = self.channels[k]
-            config["channels"][k]["name"] = channel.name.get()
-            config["channels"][k]["range"] = channel.range.get()
-            config["channels"][k]["enabled"] = channel.enabled.get()
-            config["channels"][k]["invert"] = channel.invert.get()
-            config["channels"][k]["signal_start"] = channel.signal_start.get()
-            config["channels"][k]["signal_stop"] = channel.signal_stop.get()
-            config["channels"][k]["signal_presample"] = channel.signal_presample.get()
-            config["channels"][k]["signal_method"] = channel.signal_method.get()
-            config["channels"][k]["use_baseline"] = channel.use_baseline.get()
-            config["channels"][k]["baseline_start"] = channel.baseline_start.get()
-            config["channels"][k]["baseline_stop"] = channel.baseline_stop.get()
-            config["channels"][k]["baseline_presample"] = channel.baseline_presample.get()
-            config["channels"][k]["baseline_method"] = channel.baseline_method.get()
+            config["channels"][k]["name"] = channel.name.get_value()
+            config["channels"][k]["range"] = channel.range.get_value()
+            config["channels"][k]["enabled"] = channel.enabled.get_value()
+            config["channels"][k]["invert"] = channel.invert.get_value()
+            config["channels"][k]["signal_start"] = channel.signal_start.get_value()
+            config["channels"][k]["signal_stop"] = channel.signal_stop.get_value()
+            config["channels"][k]["signal_presample"] = channel.signal_presample.get_value()
+            config["channels"][k]["signal_method"] = channel.signal_method.get_value()
+            config["channels"][k]["use_baseline"] = channel.use_baseline.get_value()
+            config["channels"][k]["baseline_start"] = channel.baseline_start.get_value()
+            config["channels"][k]["baseline_stop"] = channel.baseline_stop.get_value()
+            config["channels"][k]["baseline_presample"] = channel.baseline_presample.get_value()
+            config["channels"][k]["baseline_method"] = channel.baseline_method.get_value()
         # choppers
         for k, c in config["channels"].items():
             channel = self.channels[k]
-            config["channels"][k]["name"] = channel.name.get()
-            config["channels"][k]["range"] = channel.range.get()
-            config["channels"][k]["enabled"] = channel.enabled.get()
-            config["channels"][k]["invert"] = channel.invert.get()
-            config["channels"][k]["signal_start"] = channel.signal_start.get()
-            config["channels"][k]["signal_stop"] = channel.signal_stop.get()
-            config["channels"][k]["signal_presample"] = channel.signal_presample.get()
-            config["channels"][k]["signal_method"] = channel.signal_method.get()
-            config["channels"][k]["use_baseline"] = channel.use_baseline.get()
-            config["channels"][k]["baseline_start"] = channel.baseline_start.get()
-            config["channels"][k]["baseline_stop"] = channel.baseline_stop.get()
-            config["channels"][k]["baseline_presample"] = channel.baseline_presample.get()
-            config["channels"][k]["baseline_method"] = channel.baseline_method.get()
-        # write config
-        # TODO:
-        # recreate client
-        while True:
-            try:
-                self.client = yaqc.Client(self.port)
-            except:
-                time.sleep(0.1)
+            config["channels"][k]["name"] = channel.name.get_value()
+            config["channels"][k]["range"] = channel.range.get_value()
+            config["channels"][k]["enabled"] = channel.enabled.get_value()
+            config["channels"][k]["invert"] = channel.invert.get_value()
+            config["channels"][k]["signal_start"] = channel.signal_start.get_value()
+            config["channels"][k]["signal_stop"] = channel.signal_stop.get_value()
+            config["channels"][k]["signal_presample"] = channel.signal_presample.get_value()
+            config["channels"][k]["signal_method"] = channel.signal_method.get_value()
+            config["channels"][k]["use_baseline"] = channel.use_baseline.get_value()
+            config["channels"][k]["baseline_start"] = channel.baseline_start.get_value()
+            config["channels"][k]["baseline_stop"] = channel.baseline_stop.get_value()
+            config["channels"][k]["baseline_presample"] = channel.baseline_presample.get_value()
+            config["channels"][k]["baseline_method"] = channel.baseline_method.get_value()
+        # TODO: write config
 
-    def on_nshots_updated(self):
-        new = int(self.nshots.get())
-        self.client.set_nshots(new)
-        self.nshots.set(self.client.get_nshots())  # read back
+    def on_nshots_updated(self, new):
+        self.client.set_nshots(new["value"])
 
-    def on_shot_channel_updated(self):
+    def on_shot_channel_updated(self, value=None):
         # update y range to be range of channel
-        channel_index = self.shot_channel_combo.get_index()
-        active_channels = [channel for channel in self.channels.values() if channel.enabled.get()]
+        if not value:
+            value = self.shot_channel_combo.get()
+        channel_index = value["allowed"].index(value["value"])
+        active_channels = [
+            channel for channel in self.channels.values() if channel.enabled.get_value()
+        ]
         if channel_index > len(active_channels) - 1:
             # must be a chopper
             ymin = -1
@@ -406,48 +380,52 @@ class ConfigWidget(QtWidgets.QWidget):
     def set_slice_xlim(self, xmin, xmax):
         self.values_plot_widget.set_xlim(xmin, xmax)
 
-    def update(self):
+    def update_measured_samples(self, yi):
         # all samples
-        yi = self.client.get_measured_samples()[:, 0]
+        yi = yi[:, 0]
         self.samples_plot_scatter.clear()
         self.samples_plot_scatter.setData(self.sample_xi, yi)
         # active samples
-        self.samples_plot_active_scatter.hide()
-        current_channel_object = list(self.channels.values())[
-            self.samples_channel_combo.get_index()
-        ]
-        if current_channel_object.enabled.get():
+        # self.samples_plot_active_scatter.hide()
+        current_channel_object = self.channels[self.samples_channel_combo.get_value()]
+        if current_channel_object.enabled.get_value():
             self.samples_plot_active_scatter.show()
             s = slice(current_channel_object.signal_start, current_channel_object.signal_stop, 1)
             xi = self.sample_xi[s]
             yyi = yi[:][s]
-            if current_channel_object.use_baseline.get():
+            if current_channel_object.use_baseline.get_value():
                 s = slice(
                     current_channel_object.baseline_start, current_channel_object.baseline_stop, 1
                 )
                 xi = np.hstack([xi, self.sample_xi[s]])
                 yyi = np.hstack([yyi, yi[s]])
-            print(xi.shape, yyi.shape)
             self.samples_plot_active_scatter.setData(xi, yyi)
+
+    def update_measured_shots(self, yi):
         # shots
-        yi = self.client.get_measured_shots()[int(self.shot_channel_combo.get_index())]
+        shot_channel_options = self.shot_channel_combo.get()["allowed"]
+        yi = yi[int(shot_channel_options.index(self.shot_channel_combo.get_value()))]
         xi = np.arange(len(yi))
         self.shots_plot_scatter.clear()
         self.shots_plot_scatter.setData(xi, yi)
 
-    def update_samples_tab(self):
+    def update_samples_tab(self, value=None):
         # buttons
-        num_channels = len(self.samples_channel_combo.allowed_values)
+        allowed = self.samples_channel_combo.get()["allowed"]
+        num_channels = len(allowed)
         # channel ui
-        channel_index = self.samples_channel_combo.get_index()
+        channel_index = allowed.index(self.samples_channel_combo.get_value())
         for widget in self.channel_widgets:
+            continue
             widget.hide()
-        self.channel_widgets[channel_index].show()
+        # self.channel_widgets[channel_index].show()
         # chopper ui
-        chopper_index = self.samples_chopper_combo.get_index()
+        chopper_allowed = self.samples_chopper_combo.get()["allowed"]
+        chopper_index = chopper_allowed.index(self.samples_chopper_combo.get_value())
         for widget in self.chopper_widgets:
+            continue
             widget.hide()
-        self.chopper_widgets[chopper_index].show()
+        # self.chopper_widgets[chopper_index].show()
         # lines on plot
         self.samples_plot_max_voltage_line.hide()
         self.samples_plot_min_voltage_line.hide()
@@ -457,7 +435,7 @@ class ConfigWidget(QtWidgets.QWidget):
         self.samples_plot_baseline_stop_line.hide()
         self.samples_plot_chopper_line.hide()
         current_channel_object = list(self.channels.values())[channel_index]
-        if current_channel_object.enabled.get():
+        if current_channel_object.enabled.get_value():
             channel_min, channel_max = current_channel_object.get_range()
             self.samples_plot_max_voltage_line.show()
             self.samples_plot_max_voltage_line.setValue(channel_max * 1.05)
@@ -465,25 +443,25 @@ class ConfigWidget(QtWidgets.QWidget):
             self.samples_plot_min_voltage_line.setValue(channel_min * 1.05)
             self.samples_plot_signal_start_line.show()
             self.samples_plot_signal_start_line.setValue(
-                current_channel_object.signal_start_index.get()
+                current_channel_object.signal_start_index.get_value()
             )
             self.samples_plot_signal_stop_line.show()
             self.samples_plot_signal_stop_line.setValue(
-                current_channel_object.signal_stop_index.get()
+                current_channel_object.signal_stop_index.get_value()
             )
-            if current_channel_object.use_baseline.get():
+            if current_channel_object.use_baseline.get_value():
                 self.samples_plot_baseline_start_line.show()
                 self.samples_plot_baseline_start_line.setValue(
-                    current_channel_object.baseline_start_index.get()
+                    current_channel_object.baseline_start_index.get_value()
                 )
                 self.samples_plot_baseline_stop_line.show()
                 self.samples_plot_baseline_stop_line.setValue(
-                    current_channel_object.baseline_stop_index.get()
+                    current_channel_object.baseline_stop_index.get_value()
                 )
         current_chopper_object = list(self.choppers.values())[chopper_index]
-        if current_chopper_object.enabled.get():
+        if current_chopper_object.enabled.get_value():
             self.samples_plot_chopper_line.show()
-            self.samples_plot_chopper_line.setValue(current_chopper_object.index.get())
+            self.samples_plot_chopper_line.setValue(current_chopper_object.index.get_value())
         # finish
         ymin, ymax = current_channel_object.get_range()
         self.samples_plot_widget.set_ylim(ymin, ymax)
@@ -578,18 +556,21 @@ class Plot1D(pg.GraphicsView):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, app, port):
+    def __init__(self, app, client):
         super().__init__()
         self.app = app
         self.setWindowTitle("ni-daqmx-tmux")
-        self.setCentralWidget(ConfigWidget(port))
+        self.setCentralWidget(ConfigWidget(client))
 
 
 def main():
     """Initialize application and main window."""
+    import yaqc_qtpy
+
     port = int(sys.argv[1])
     app = QtWidgets.QApplication(sys.argv)
-    main_window = MainWindow(app, port)
+    client = yaqc_qtpy.QClient(port=port, host="localhost")
+    main_window = MainWindow(app, client)
     main_window.showMaximized()
     sys.exit(app.exec_())
 

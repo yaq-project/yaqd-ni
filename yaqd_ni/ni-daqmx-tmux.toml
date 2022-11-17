@@ -1,12 +1,13 @@
 protocol = "ni-daqmx-tmux"
 doc = "Triggered NI-daqmx with multiplex."
 traits = ["is-sensor", "has-measure-trigger", "is-daemon"]
-hardware = ["ni:pci-6251"]
+hardware = ["ni:pci-6251", "ni:pci-6361"]
 
 [links]
-source = ""
-bugtracker = ""
+source = "https://github.com/yaq-project/yaqd-ni"
+bugtracker = "https://github.com/yaq-project/yaqd-ni/issues"
 manufacturer = ""
+example-configs = "https://github.com/yaq-project/yaqd-ni/tree/main/example-yaq-configs/ni-daqmx-tmux"
 
 [installation]
 PyPI = "https://pypi.org/project/yaqd-ni"
@@ -87,6 +88,10 @@ default = "__null__"
 type = "int"
 default = 100
 
+[state.ms_wait]
+type = "int"
+default = 0
+
 [messages]
 
 [messages.get_channel_signs]
@@ -107,6 +112,14 @@ response = "int"
 doc = "Set the number of shots to acquire."
 request = [{"name"="nshots", "type"="int"}]
 
+[messages.get_ms_wait]
+doc = "Get the number of milliseconds to wait before acquiring."
+response = "int"
+
+[messages.set_ms_wait]
+doc = "Set the number of milliseconds to wait before acquiring."
+request = [{"name"="ms_wait", "type"="int"}]
+
 [messages.get_sample_correspondances]
 doc = "Returns an array of integers of length nsamples. Zero indicates rest sample. Postive indicates channel. Negative indicates chopper."
 response = "ndarray"
@@ -120,3 +133,9 @@ control_kind = "hinted"
 record_kind = "metadata"
 type = "int"
 
+[properties.ms_wait]
+getter = "get_ms_wait"
+setter = "set_ms_wait"
+type = "int"
+control_kind = "normal"
+record_kind = "metadata"

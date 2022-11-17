@@ -110,15 +110,17 @@
     },
     "doc": "Triggered NI-daqmx with multiplex.",
     "hardware": [
-        "ni:pci-6251"
+        "ni:pci-6251",
+        "ni:pci-6361"
     ],
     "installation": {
         "PyPI": "https://pypi.org/project/yaqd-ni"
     },
     "links": {
-        "bugtracker": "",
+        "bugtracker": "https://github.com/yaq-project/yaqd-ni/issues",
+        "example-configs": "https://github.com/yaq-project/yaqd-ni/tree/main/example-yaq-configs/ni-daqmx-tmux",
         "manufacturer": "",
-        "source": ""
+        "source": "https://github.com/yaq-project/yaqd-ni"
     },
     "messages": {
         "busy": {
@@ -211,6 +213,11 @@
                 "type": "int"
             }
         },
+        "get_ms_wait": {
+            "doc": "Get the number of milliseconds to wait before acquiring.",
+            "request": [],
+            "response": "int"
+        },
         "get_nshots": {
             "doc": "Get the currently planned number of shots.",
             "request": [],
@@ -251,6 +258,16 @@
             ],
             "response": "int"
         },
+        "set_ms_wait": {
+            "doc": "Set the number of milliseconds to wait before acquiring.",
+            "request": [
+                {
+                    "name": "ms_wait",
+                    "type": "int"
+                }
+            ],
+            "response": "null"
+        },
         "set_nshots": {
             "doc": "Set the number of shots to acquire.",
             "request": [
@@ -281,6 +298,17 @@
         }
     },
     "properties": {
+        "ms_wait": {
+            "control_kind": "normal",
+            "dynamic": true,
+            "getter": "get_ms_wait",
+            "limits_getter": null,
+            "options_getter": null,
+            "record_kind": "metadata",
+            "setter": "set_ms_wait",
+            "type": "int",
+            "units_getter": null
+        },
         "nshots": {
             "control_kind": "hinted",
             "dynamic": true,
@@ -296,6 +324,10 @@
     "protocol": "ni-daqmx-tmux",
     "requires": [],
     "state": {
+        "ms_wait": {
+            "default": 0,
+            "type": "int"
+        },
         "nshots": {
             "default": 100,
             "type": "int"

@@ -13,6 +13,7 @@ requires-python = ">=3.7"
 requires = ["yaqd-core>=2021.3.0",
             "pydaqmx",
 	    "numpy",
+            "toml>=0.10.2",
 	    ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -36,6 +37,9 @@ gui = ["pyqtgraph", "qtpy", "qtypes", "yaqc"]
 [tool.flit.scripts]
 yaqd-ni-daqmx-tmux = "yaqd_ni._ni_daqmx_tmux:NiDaqmxTmux.main"
 yaqd-ni-daqmx-tmux-gui = "yaqd_ni._ni_daqmx_tmux_gui:main"
+
+[tool.flit.entrypoints."yaqc_qtpy.main.ni_daqmx_tmux"]
+ni_daqmx_tmux = "yaqd_ni._ni_daqmx_tmux_gui:ConfigWidget"
 
 [tool.black]
 line-length = 99

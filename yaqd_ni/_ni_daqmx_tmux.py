@@ -6,6 +6,7 @@ import copy
 import pathlib
 from dataclasses import dataclass
 from typing import Dict, Any, List
+import warnings
 
 import numpy as np  # type: ignore
 
@@ -64,8 +65,6 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         for k, d in self._config["channels"].items():
             channel = Channel(**d, physical_channel=k)
             self._channels.append(channel)
-        self._channel_names = [c.name for c in self._channels if c.enabled]  # expected by parent
-        self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
         self._raw_channel_names = [c.name for c in self._channels if c.enabled]  # from config only
         # choppers
         self._choppers = []
@@ -78,12 +77,27 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         x += [c.physical_channel for c in self._channels]
         x += [c.physical_channel for c in self._choppers]
         assert len(set(x)) == len(x)
+        # run shots processing with fake data
+        channel_names = [c.name for c in self._channels if c.enabled]
+        chopper_names = [c.name for c in self._choppers if c.enabled]
+        shots = np.zeros((len(channel_names) + len(chopper_names), self._state["nshots"]))
+        names = channel_names + chopper_names
+        kinds = ["channel"] * len(channel_names) + ["chopper"] * len(chopper_names)
+        path = self._config["shots_processing_path"]
+        name = os.path.basename(path).split(".")[0]
+        directory = os.path.dirname(path)
+        f, p, d = imp.find_module(name, [directory])
+        processing_module = imp.load_module(name, f, p, d)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            out = processing_module.process(shots, names, kinds)
+        self._channel_names = out[1]  # expected by parent
+        self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
         # finish
         self._stale_task = True
         self._channel_signs = [False for c in self._channels]
         self._create_sample_correspondances()
         self._create_task()
-        self.measure()
 
     def _create_sample_correspondances(self):
         self._sample_correspondances = np.zeros(self._config["nsamples"])
@@ -224,10 +238,14 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
     def get_channel_signs(self) -> List[bool]:
         return self._channel_signs
 
+    def get_ms_wait(self):
+        return self._state["ms_wait"]
+
     def get_sample_correspondances(self):
         return self._sample_correspondances
 
     async def _measure(self):
+        await asyncio.sleep(self._state["ms_wait"] / 1000.0)
         # this method runs syncronusly
         while True:
             samples = await self._loop.run_in_executor(None, self._measure_samples)
@@ -338,3 +356,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         assert nshots > 0
         self._state["nshots"] = nshots
         self._stale_task = True
+
+    def set_ms_wait(self, ms_wait):
+        """Set number of shots."""
+        self._state["ms_wait"] = ms_wait
