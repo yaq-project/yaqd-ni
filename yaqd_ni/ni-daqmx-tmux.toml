@@ -21,19 +21,26 @@ default = "average"
 [[types]]
 type = "record"
 name = "channel"
-fields = [{"name"="name", "type"="string"},
-          {"name"="range", "type"="string"},
-          {"name"="enabled", "type"="boolean", "default"=true},
-	  {"name"="invert", "type"="boolean", "default"=false},
-	  {"name"="signal_start", "type"="int"},
-	  {"name"="signal_stop", "type"="int"},
-	  {"name"="signal_presample", "type"="int", default=0},
-	  {"name"="signal_method", "type"="processing_method"},
-	  {"name"="use_baseline", "type"="boolean", "default"=false},
-	  {"name"="baseline_start", "type"=["null", "int"], "default"="__null__"},
-	  {"name"="baseline_stop", "type"=["null", "int"], "default"="__null__"},
-	  {"name"="baseline_presample", "type"="int", default=0},
-	  {"name"="baseline_method", "type"="processing_method"}]
+fields = [
+	{"name"="name", "type"="string"},
+	{
+		"name"="range", 
+		"type"="float", 
+		"doc"="The maximum value, in volts. Minimum value is the negative of max. Note that range will be coerced by device.",
+		"default"=10.0
+	},
+	{"name"="enabled", "type"="boolean", "default"=true},
+	{"name"="invert", "type"="boolean", "default"=false},
+	{"name"="signal_start", "type"="int"},
+	{"name"="signal_stop", "type"="int"},
+	{"name"="signal_presample", "type"="int", default=0},
+	{"name"="signal_method", "type"="processing_method"},
+	{"name"="use_baseline", "type"="boolean", "default"=false},
+	{"name"="baseline_start", "type"=["null", "int"], "default"="__null__"},
+	{"name"="baseline_stop", "type"=["null", "int"], "default"="__null__"},
+	{"name"="baseline_presample", "type"="int", default=0},
+	{"name"="baseline_method", "type"="processing_method"}
+]
 
 [[types]]
 type = "record"

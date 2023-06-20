@@ -31,7 +31,7 @@ def process_samples(method, samples):
 @dataclass
 class Channel:
     name: str
-    range: str
+    range: float
     enabled: bool
     physical_channel: str
     invert: bool
@@ -180,8 +180,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
                     physical_channel = (
                         "/" + self._config["device_name"] + "/" + channel.physical_channel
                     )
-                    min_voltage, max_voltage = -10, 10  # TODO
-                    # min_voltage, max_voltage = channel.get_range()
+                    min_voltage, max_voltage = [-channel.range, channel.range]
                 elif correspondance < 0:
                     chopper = self._choppers[-correspondance - 1]
                     physical_channel = (
@@ -242,7 +241,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
 
     async def _measure(self):
         await asyncio.sleep(self._state["ms_wait"] / 1000.0)
-        # this method runs syncronusly
+        # this method runs syncronously
         while True:
             samples = await self._loop.run_in_executor(None, self._measure_samples)
             if not self._stale_task:
