@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- In config, the channel range field is now used by the daemon.
+
+### Changed
+- In config, channel range fields are now floats, not strings.
+
 ## [2022.11.0]
 
 ### Added
