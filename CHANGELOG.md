@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - In config, the channel range field is now used by the daemon.
 
 ### Changed
-- In config, channel range fields are now floats, not strings.
+- In config, channel range fields is now a list of floats (`[min, max]`).
 
 ## [2022.11.0]
 

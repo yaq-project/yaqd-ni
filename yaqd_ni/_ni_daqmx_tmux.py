@@ -31,7 +31,7 @@ def process_samples(method, samples):
 @dataclass
 class Channel:
     name: str
-    range: float
+    range: list
     enabled: bool
     physical_channel: str
     invert: bool
@@ -93,10 +93,31 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
             out = processing_module.process(shots, names, kinds)
         self._channel_names = out[1]  # expected by parent
         self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
+
+        # check channel ranges are valid
+        ranges = self._get_voltage_ranges()
+        invalid_ranges = [ch.name for ch in self._channels if ch.range not in ranges]
+        if invalid_ranges:
+            self.logger.error(
+                f"""channels {invalid_ranges} have invalid voltage ranges. \
+                Valid ranges are {ranges}. """
+            )
+            raise ValueError()
+
         # finish
-        self._stale_task = True
+        self._stale_task = True        
         self._create_sample_correspondances()
         self._create_task()
+
+    def _get_voltage_ranges(self):
+        data = (ctypes.c_double * 40) ()
+        PyDAQmx.GetDevAIVoltageRngs(self.config["device_name"], data, len(data))
+        # data = (-0.1, 0.1, -0.2, 0.2, ..., -10.0, 10.0, 0.0, 0.0, ...)
+        ranges = [(data[i], data[i+1]) for i in range(0, len(data), 2) if (data[i], data[i+1]) != (0., 0.)]
+        # remove extra buffer values
+        if len(ranges) == len(data) // 2:
+            self.logger.warn("Potentially did not discover all valid voltage ranges")
+        return ranges
 
     def _create_sample_correspondances(self):
         self._sample_correspondances = np.zeros(self._config["nsamples"])
