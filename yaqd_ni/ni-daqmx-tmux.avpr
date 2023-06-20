@@ -348,8 +348,10 @@
                     "type": "string"
                 },
                 {
+                    "default": 10.0,
+                    "doc": "The maximum value, in volts. Minimum value is the negative of max. Note that range will be coerced by device.",
                     "name": "range",
-                    "type": "string"
+                    "type": "float"
                 },
                 {
                     "default": true,

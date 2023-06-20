@@ -24,8 +24,8 @@ name = "channel"
 fields = [
 	{"name"="name", "type"="string"},
 	{
-		"name"="range", 
-		"type"="float", 
+		"name"="range",
+		"type"="float",
 		"doc"="The maximum value, in volts. Minimum value is the negative of max. Note that range will be coerced by device.",
 		"default"=10.0
 	},
