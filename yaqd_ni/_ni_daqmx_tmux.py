@@ -105,15 +105,19 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
             raise ValueError()
 
         # finish
-        self._stale_task = True        
+        self._stale_task = True
         self._create_sample_correspondances()
         self._create_task()
 
     def _get_voltage_ranges(self):
-        data = (ctypes.c_double * 40) ()
+        data = (ctypes.c_double * 40)()
         PyDAQmx.GetDevAIVoltageRngs(self.config["device_name"], data, len(data))
         # data = (-0.1, 0.1, -0.2, 0.2, ..., -10.0, 10.0, 0.0, 0.0, ...)
-        ranges = [(data[i], data[i+1]) for i in range(0, len(data), 2) if (data[i], data[i+1]) != (0., 0.)]
+        ranges = [
+            (data[i], data[i + 1])
+            for i in range(0, len(data), 2)
+            if (data[i], data[i + 1]) != (0.0, 0.0)
+        ]
         # remove extra buffer values
         if len(ranges) == len(data) // 2:
             self.logger.warn("Potentially did not discover all valid voltage ranges")
