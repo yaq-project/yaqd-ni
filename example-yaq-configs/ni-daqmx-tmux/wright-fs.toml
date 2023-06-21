@@ -19,7 +19,7 @@ baseline_start = 800
 baseline_stop = 830
 baseline_presample = 0
 baseline_method = "average"
-range = "10.0 (320.0)"
+range = [-10.0, 10.0]
 
 [daq.channels.ai1]
 enabled = false
@@ -34,7 +34,7 @@ baseline_start = 732
 baseline_stop = 733
 baseline_presample = 0
 baseline_method = "average"
-range = "10.0 (320.0)"
+range = [-10.0, 10.0]
 
 [daq.channels.ai2]
 enabled = false
@@ -49,7 +49,7 @@ baseline_start = 830
 baseline_stop = 859
 baseline_presample = 0
 baseline_method = "average"
-range = "2.0 (64.0)"
+range = [-2.0, 2.0]
 
 [daq.channels.ai3]
 enabled = true
@@ -64,7 +64,7 @@ baseline_start = 870
 baseline_stop = 899
 baseline_presample = 0
 baseline_method = "average"
-range = "0.5 (16.0)"
+range = [-0.5, 0.5]
 
 [daq.choppers.ai4]
 enabled = false
