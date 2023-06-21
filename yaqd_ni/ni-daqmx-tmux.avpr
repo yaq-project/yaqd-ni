@@ -342,16 +342,24 @@
             "type": "enum"
         },
         {
+            "items": "float",
+            "name": "voltage_range",
+            "type": "array"
+        },
+        {
             "fields": [
                 {
                     "name": "name",
                     "type": "string"
                 },
                 {
-                    "default": 10.0,
-                    "doc": "The maximum value, in volts. Minimum value is the negative of max. Note that range will be coerced by device.",
+                    "default": [
+                        -10.0,
+                        10.0
+                    ],
+                    "doc": "[min_value, max_value], in volts. Range values are restricted to those the available to the device.",
                     "name": "range",
-                    "type": "float"
+                    "type": "voltage_range"
                 },
                 {
                     "default": true,

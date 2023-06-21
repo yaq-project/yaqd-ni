@@ -114,6 +114,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
 
     def _get_voltage_ranges(self):
         import PyDAQmx  # type: ignore
+
         data = (ctypes.c_double * 40)()
         PyDAQmx.GetDevAIVoltageRngs(self._config["device_name"], data, len(data))
         # data = (-0.1, 0.1, -0.2, 0.2, ..., -10.0, 10.0, 0.0, 0.0, ...)
