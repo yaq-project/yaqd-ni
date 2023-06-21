@@ -129,6 +129,13 @@
             "request": [],
             "response": "boolean"
         },
+        "get_allowed_voltage_ranges": {
+            "request": [],
+            "response": {
+                "items": "voltage_range",
+                "type": "array"
+            }
+        },
         "get_channel_names": {
             "doc": "Get current channel names.",
             "origin": "is-sensor",
@@ -224,13 +231,6 @@
             "origin": "is-daemon",
             "request": [],
             "response": "string"
-        },
-        "get_voltage_ranges": {
-            "request": [],
-            "response": {
-                "items": "voltage_range",
-                "type": "array"
-            }
         },
         "id": {
             "doc": "JSON object with information to identify the daemon, including name, kind, make, model, serial.\n",
