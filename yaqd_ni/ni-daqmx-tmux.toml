@@ -105,7 +105,7 @@ default = 0
 
 [messages]
 
-[messages.get_voltage_ranges]
+[messages.get_allowed_voltage_ranges]
 response = {"type"="array", "items"="voltage_range"}
 
 [messages.get_measured_samples]

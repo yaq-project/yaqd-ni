@@ -112,7 +112,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         self._create_sample_correspondances()
         self._create_task()
 
-    def _get_voltage_ranges(self) -> List[tuple]:
+    def _get_voltage_ranges(self) -> List[Tuple[float, float]]:
         import PyDAQmx  # type: ignore
 
         data = (ctypes.c_double * 40)()
@@ -385,5 +385,5 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         """Set number of shots."""
         self._state["ms_wait"] = ms_wait
 
-    def get_allowed_voltage_ranges(self) -> List[tuple]:
+    def get_allowed_voltage_ranges(self) -> List[Tuple[float, float]]:
         return self.ranges
