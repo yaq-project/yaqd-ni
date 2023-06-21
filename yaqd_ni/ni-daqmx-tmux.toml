@@ -19,17 +19,19 @@ symbols = ["average", "sum", "min", "max"]
 default = "average"
 
 [[types]]
+name = "voltage_range"
+type = "array"
+items = "float"
+
+[[types]]
 type = "record"
 name = "channel"
-fields = [
-	{"name"="name", "type"="string"},
+fields = [{"name"="name", "type"="string"},
 	{
 		"name"="range",
-		"type"="array",
-		"items"="float",
-		"doc"="""[min_value, max_value], in volts. \
-		Range values are restricted to those the available to the device.""",
-		"default"=10.0
+		"type" = "voltage_range",
+		"doc"="[min_value, max_value], in volts. Range values are restricted to those the available to the device.",
+		"default" = [-10.0, 10.0]
 	},
 	{"name"="enabled", "type"="boolean", "default"=true},
 	{"name"="invert", "type"="boolean", "default"=false},
@@ -146,6 +148,3 @@ type = "int"
 control_kind = "normal"
 record_kind = "metadata"
 
-[properties.channel_ranges]
-getter = "get_voltage_ranges"
-type = "list"

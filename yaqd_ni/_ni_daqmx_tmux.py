@@ -4,6 +4,8 @@ import imp
 import time
 import copy
 import pathlib
+import ctypes
+
 from dataclasses import dataclass
 from typing import Dict, Any, List
 import warnings
@@ -31,7 +33,7 @@ def process_samples(method, samples):
 @dataclass
 class Channel:
     name: str
-    range: list
+    range: tuple
     enabled: bool
     physical_channel: str
     invert: bool
@@ -63,6 +65,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         # channels
         self._channels = []
         for k, d in self._config["channels"].items():
+            d["range"] = tuple(d["range"])
             channel = Channel(**d, physical_channel=k)
             self._channels.append(channel)
         self._raw_channel_names = [c.name for c in self._channels if c.enabled]  # from config only
@@ -110,8 +113,9 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         self._create_task()
 
     def _get_voltage_ranges(self):
+        import PyDAQmx  # type: ignore
         data = (ctypes.c_double * 40)()
-        PyDAQmx.GetDevAIVoltageRngs(self.config["device_name"], data, len(data))
+        PyDAQmx.GetDevAIVoltageRngs(self._config["device_name"], data, len(data))
         # data = (-0.1, 0.1, -0.2, 0.2, ..., -10.0, 10.0, 0.0, 0.0, ...)
         ranges = [
             (data[i], data[i + 1])
@@ -205,7 +209,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
                     physical_channel = (
                         "/" + self._config["device_name"] + "/" + channel.physical_channel
                     )
-                    min_voltage, max_voltage = [-channel.range, channel.range]
+                    min_voltage, max_voltage = channel.range
                 elif correspondance < 0:
                     chopper = self._choppers[-correspondance - 1]
                     physical_channel = (
