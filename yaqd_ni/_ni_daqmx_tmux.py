@@ -271,7 +271,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
 
     async def _measure(self):
         await asyncio.sleep(self._state["ms_wait"] / 1000.0)
-        # this method runs syncronously
+        # this method runs synchronously
         while True:
             samples = await self._loop.run_in_executor(None, self._measure_samples)
             if not self._stale_task:
