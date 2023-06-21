@@ -7,7 +7,7 @@ import pathlib
 import ctypes
 
 from dataclasses import dataclass
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 import warnings
 
 import numpy as np  # type: ignore
