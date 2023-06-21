@@ -225,6 +225,13 @@
             "request": [],
             "response": "string"
         },
+        "get_voltage_ranges": {
+            "request": [],
+            "response": {
+                "items": "voltage_range",
+                "type": "array"
+            }
+        },
         "id": {
             "doc": "JSON object with information to identify the daemon, including name, kind, make, model, serial.\n",
             "origin": "is-daemon",
