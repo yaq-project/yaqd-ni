@@ -98,12 +98,12 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
 
         # check channel ranges are valid
-        ranges = self._get_voltage_ranges()
-        invalid_ranges = [ch.name for ch in self._channels if ch.range not in ranges]
+        self.ranges = self._get_voltage_ranges()
+        invalid_ranges = [ch.name for ch in self._channels if ch.range not in self.ranges]
         if invalid_ranges:
             self.logger.error(
                 f"""channels {invalid_ranges} have invalid voltage ranges. \
-                Valid ranges are {ranges}. """
+                Valid ranges are {self.ranges}. """
             )
             raise ValueError()
 
@@ -112,7 +112,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         self._create_sample_correspondances()
         self._create_task()
 
-    def _get_voltage_ranges(self):
+    def _get_voltage_ranges(self) -> List[tuple]:
         import PyDAQmx  # type: ignore
 
         data = (ctypes.c_double * 40)()
@@ -384,3 +384,6 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
     def set_ms_wait(self, ms_wait):
         """Set number of shots."""
         self._state["ms_wait"] = ms_wait
+
+    def get_allowed_voltage_ranges(self) -> List[tuple]:
+        return self.ranges
