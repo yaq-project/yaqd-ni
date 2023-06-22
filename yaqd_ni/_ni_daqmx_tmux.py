@@ -101,9 +101,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         self.ranges = self._get_voltage_ranges()
         is_similar_to_valid = lambda x: [all(np.isclose(x, r)) for r in self.ranges]
         invalid_ranges = [
-            ch.name 
-            for ch in self._channels 
-            if not any(is_similar_to_valid(ch.range))
+            ch.name for ch in self._channels if not any(is_similar_to_valid(ch.range))
         ]
         if invalid_ranges:
             self.logger.error(
