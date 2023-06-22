@@ -99,7 +99,12 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
 
         # check channel ranges are valid
         self.ranges = self._get_voltage_ranges()
-        invalid_ranges = [ch.name for ch in self._channels if ch.range not in self.ranges]
+        is_similar_to_valid = lambda x: [all(np.isclose(x, r)) for r in self.ranges]
+        invalid_ranges = [
+            ch.name 
+            for ch in self._channels 
+            if not any(is_similar_to_valid(ch.range))
+        ]
         if invalid_ranges:
             self.logger.error(
                 f"""channels {invalid_ranges} have invalid voltage ranges. \
