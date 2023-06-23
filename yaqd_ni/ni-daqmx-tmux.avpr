@@ -132,7 +132,7 @@
         "get_allowed_voltage_ranges": {
             "request": [],
             "response": {
-                "items": "voltage_range",
+                "items": "string",
                 "type": "array"
             }
         },
