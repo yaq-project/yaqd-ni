@@ -7,7 +7,7 @@ import pathlib
 import ctypes
 
 from dataclasses import dataclass
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List
 import warnings
 
 import numpy as np  # type: ignore
@@ -103,7 +103,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
             lambda x: x in self.ranges
         )  # [all(np.isclose(x, r)) for r in self.ranges]
         invalid_ranges = [
-            ch.name for ch in self._channels if not any(is_similar_to_valid(ch.range))
+            ch.name for ch in self._channels if not is_similar_to_valid(ch.range)
         ]
         if invalid_ranges:
             self.logger.error(
@@ -124,7 +124,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         PyDAQmx.GetDevAIVoltageRngs(self._config["device_name"], data, len(data))
         # data = (-0.1, 0.1, -0.2, 0.2, ..., -10.0, 10.0, 0.0, 0.0, ...)
         ranges = [
-            (round(data[i], 5), round(data[i + 1], 5))
+            (data[i], data[i + 1])
             for i in range(0, len(data), 2)
             if (data[i], data[i + 1]) != (0.0, 0.0)
         ]
@@ -390,5 +390,6 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         """Set number of shots."""
         self._state["ms_wait"] = ms_wait
 
-    def get_allowed_voltage_ranges(self) -> List[Tuple[float, float]]:
-        return self.ranges
+    def get_allowed_voltage_ranges(self) -> List[str]:
+        # stringify items to prevent floating point miscommunications
+        return [map(str, self.ranges)]
