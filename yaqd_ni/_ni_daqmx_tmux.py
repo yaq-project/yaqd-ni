@@ -390,4 +390,4 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
 
     def get_allowed_voltage_ranges(self) -> List[str]:
         # stringify items to prevent floating point miscommunications
-        return [map(str, self.ranges)]
+        return list(map(str, self.ranges))
