@@ -1,0 +1,94 @@
+[daq]
+port = 38999
+loop_at_startup=false
+device_name = "Dev1"
+trigger_source = "PFI0"
+rest_channel = "ai5"
+shots_processing_path = "C:\\Users\\john\\source\\shots-processing\\dual_chopping_2018-12-03.py"
+
+[daq.channels.ai0]
+enabled = true
+name = "sample"
+invert = false
+signal_start = 0
+signal_stop = 3
+signal_presample = 0
+signal_method = "average"
+use_baseline = true
+baseline_start = 11
+baseline_stop = 25
+baseline_presample = 0
+baseline_method = "average"
+range = [-5.0, 5.0]
+
+[daq.channels.ai1]
+enabled = true
+name = "pyro_1"
+invert = true
+signal_start = 36
+signal_stop = 46
+signal_presample = 1
+signal_method = "average"
+use_baseline = false
+baseline_start = 750
+baseline_stop = 795
+baseline_presample = 3
+baseline_method = "average"
+range = [-2.0, 2.0]
+
+[daq.channels.ai2]
+enabled = true
+name = "pyro_2"
+invert = true
+signal_start = 26
+signal_stop = 35
+signal_presample = 3
+signal_method = "average"
+use_baseline = true
+baseline_start = 601
+baseline_stop = 649
+baseline_presample = 3
+baseline_method = "average"
+range = [-1.0, 1.0]
+
+[daq.channels.ai3]
+enabled = true
+name = "pyro_3"
+invert = true
+signal_start = 71
+signal_stop = 101
+signal_presample = 2
+signal_method = "average"
+use_baseline = true
+baseline_start = 690
+baseline_stop = 747
+baseline_presample = 2
+baseline_method = "average"
+range = [-1.0, 1.0]
+
+[daq.channels.ai4]
+enabled = false
+name = "pyro_4"
+invert = false
+signal_start = 102
+signal_stop = 132
+signal_presample = 2
+signal_method = "average"
+use_baseline = false
+baseline_start = 850
+baseline_stop = 899
+baseline_presample = 2
+baseline_method = "average"
+range = [-2.0, 2.0]
+
+[daq.choppers.ai6]
+enabled = true
+name = "chopper_1"
+invert = false
+index = 801
+
+[daq.choppers.ai7]
+enabled = true
+name = "chopper_2"
+invert = false
+index = 200
