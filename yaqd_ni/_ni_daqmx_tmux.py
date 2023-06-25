@@ -4,8 +4,10 @@ import imp
 import time
 import copy
 import pathlib
+import ctypes
+
 from dataclasses import dataclass
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 import warnings
 
 import numpy as np  # type: ignore
@@ -31,7 +33,7 @@ def process_samples(method, samples):
 @dataclass
 class Channel:
     name: str
-    range: str
+    range: tuple
     enabled: bool
     physical_channel: str
     invert: bool
@@ -63,6 +65,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         # channels
         self._channels = []
         for k, d in self._config["channels"].items():
+            d["range"] = tuple(d["range"])
             channel = Channel(**d, physical_channel=k)
             self._channels.append(channel)
         self._raw_channel_names = [c.name for c in self._channels if c.enabled]  # from config only
@@ -93,10 +96,40 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
             out = processing_module.process(shots, names, kinds)
         self._channel_names = out[1]  # expected by parent
         self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
+
+        # check channel ranges are valid
+        self.ranges = self._get_voltage_ranges()
+        is_similar_to_valid = (
+            lambda x: x in self.ranges
+        )  # [all(np.isclose(x, r)) for r in self.ranges]
+        invalid_ranges = [ch.name for ch in self._channels if not is_similar_to_valid(ch.range)]
+        if invalid_ranges:
+            self.logger.error(
+                f"""channels {invalid_ranges} have invalid voltage ranges. \
+                Valid ranges are {self.ranges}. """
+            )
+            raise ValueError()
+
         # finish
         self._stale_task = True
         self._create_sample_correspondances()
         self._create_task()
+
+    def _get_voltage_ranges(self) -> List[Tuple[float, float]]:
+        import PyDAQmx  # type: ignore
+
+        data = (ctypes.c_double * 40)()
+        PyDAQmx.GetDevAIVoltageRngs(self._config["device_name"], data, len(data))
+        # data = (-0.1, 0.1, -0.2, 0.2, ..., -10.0, 10.0, 0.0, 0.0, ...)
+        ranges = [
+            (data[i], data[i + 1])
+            for i in range(0, len(data), 2)
+            if (data[i], data[i + 1]) != (0.0, 0.0)
+        ]
+        # remove extra buffer values
+        if len(ranges) == len(data) // 2:
+            self.logger.warn("Potentially did not discover all valid voltage ranges")
+        return ranges
 
     def _create_sample_correspondances(self):
         self._sample_correspondances = np.zeros(self._config["nsamples"])
@@ -180,8 +213,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
                     physical_channel = (
                         "/" + self._config["device_name"] + "/" + channel.physical_channel
                     )
-                    min_voltage, max_voltage = -10, 10  # TODO
-                    # min_voltage, max_voltage = channel.get_range()
+                    min_voltage, max_voltage = channel.range
                 elif correspondance < 0:
                     chopper = self._choppers[-correspondance - 1]
                     physical_channel = (
@@ -242,7 +274,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
 
     async def _measure(self):
         await asyncio.sleep(self._state["ms_wait"] / 1000.0)
-        # this method runs syncronusly
+        # this method runs synchronously
         while True:
             samples = await self._loop.run_in_executor(None, self._measure_samples)
             if not self._stale_task:
@@ -355,3 +387,7 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
     def set_ms_wait(self, ms_wait):
         """Set number of shots."""
         self._state["ms_wait"] = ms_wait
+
+    def get_allowed_voltage_ranges(self) -> List[str]:
+        # stringify items to prevent floating point miscommunications
+        return list(map(str, self.ranges))

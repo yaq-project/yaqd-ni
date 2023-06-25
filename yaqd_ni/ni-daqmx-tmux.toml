@@ -19,21 +19,32 @@ symbols = ["average", "sum", "min", "max"]
 default = "average"
 
 [[types]]
+name = "voltage_range"
+type = "array"
+items = "float"
+
+[[types]]
 type = "record"
 name = "channel"
 fields = [{"name"="name", "type"="string"},
-          {"name"="range", "type"="string"},
-          {"name"="enabled", "type"="boolean", "default"=true},
-	  {"name"="invert", "type"="boolean", "default"=false},
-	  {"name"="signal_start", "type"="int"},
-	  {"name"="signal_stop", "type"="int"},
-	  {"name"="signal_presample", "type"="int", default=0},
-	  {"name"="signal_method", "type"="processing_method"},
-	  {"name"="use_baseline", "type"="boolean", "default"=false},
-	  {"name"="baseline_start", "type"=["null", "int"], "default"="__null__"},
-	  {"name"="baseline_stop", "type"=["null", "int"], "default"="__null__"},
-	  {"name"="baseline_presample", "type"="int", default=0},
-	  {"name"="baseline_method", "type"="processing_method"}]
+	{
+		"name"="range",
+		"type" = "voltage_range",
+		"doc"="[min_value, max_value], in volts. Range values are restricted to those the available to the device.",
+		"default" = [-10.0, 10.0]
+	},
+	{"name"="enabled", "type"="boolean", "default"=true},
+	{"name"="invert", "type"="boolean", "default"=false},
+	{"name"="signal_start", "type"="int"},
+	{"name"="signal_stop", "type"="int"},
+	{"name"="signal_presample", "type"="int", default=0},
+	{"name"="signal_method", "type"="processing_method"},
+	{"name"="use_baseline", "type"="boolean", "default"=false},
+	{"name"="baseline_start", "type"=["null", "int"], "default"="__null__"},
+	{"name"="baseline_stop", "type"=["null", "int"], "default"="__null__"},
+	{"name"="baseline_presample", "type"="int", default=0},
+	{"name"="baseline_method", "type"="processing_method"}
+]
 
 [[types]]
 type = "record"
@@ -94,6 +105,9 @@ default = 0
 
 [messages]
 
+[messages.get_allowed_voltage_ranges]
+response = {"type"="array", "items"="string"}
+
 [messages.get_measured_samples]
 response = "ndarray"
 doc = "Get an array of shape (sample, shot)."
@@ -136,3 +150,4 @@ setter = "set_ms_wait"
 type = "int"
 control_kind = "normal"
 record_kind = "metadata"
+
