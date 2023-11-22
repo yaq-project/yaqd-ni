@@ -1,8 +1,7 @@
 import asyncio
-import os
-import imp
+import pathlib
+import importlib
 import time
-import copy
 import pathlib
 import ctypes
 
@@ -86,14 +85,17 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         shots = np.zeros((len(channel_names) + len(chopper_names), self._state["nshots"]))
         names = channel_names + chopper_names
         kinds = ["channel"] * len(channel_names) + ["chopper"] * len(chopper_names)
-        path = self._config["shots_processing_path"]
-        name = os.path.basename(path).split(".")[0]
-        directory = os.path.dirname(path)
-        f, p, d = imp.find_module(name, [directory])
-        processing_module = imp.load_module(name, f, p, d)
+
+        path = pathlib.Path(self._config["shots_processing_path"])
+        if (spec := importlib.util.spec_from_file_location(path.name.removesuffix(path.suffix), path)) is not None:
+            self.processing_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(self.processing_module)
+        else:
+            raise ImportError(f"cannot find shots_processing in path {path}")
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            out = processing_module.process(shots, names, kinds)
+            out = self.processing_module.process(shots, names, kinds)
         self._channel_names = out[1]  # expected by parent
         self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
 
@@ -322,16 +324,11 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
             shots[i] = out
             i += 1
         # process
-        path = self._config["shots_processing_path"]
-        name = os.path.basename(path).split(".")[0]
-        directory = os.path.dirname(path)
-        f, p, d = imp.find_module(name, [directory])
-        processing_module = imp.load_module(name, f, p, d)
         kinds = ["channel" for _ in self._raw_channel_names] + [
             "chopper" for c in self._choppers if c.enabled
         ]
         names = self._raw_channel_names + [c.name for c in self._choppers if c.enabled]
-        out = processing_module.process(shots, names, kinds)
+        out = self.processing_module.process(shots, names, kinds)
         if len(out) == 3:
             out, out_names, out_signed = out
         else:
