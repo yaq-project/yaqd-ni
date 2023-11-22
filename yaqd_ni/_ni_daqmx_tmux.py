@@ -87,7 +87,11 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         kinds = ["channel"] * len(channel_names) + ["chopper"] * len(chopper_names)
 
         path = pathlib.Path(self._config["shots_processing_path"])
-        if (spec := importlib.util.spec_from_file_location(path.name.removesuffix(path.suffix), path)) is not None:
+        if (
+            spec := importlib.util.spec_from_file_location(
+                path.name.removesuffix(path.suffix), path
+            )
+        ) is not None:
             self.processing_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(self.processing_module)
         else:
