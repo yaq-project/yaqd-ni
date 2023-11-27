@@ -1,7 +1,7 @@
 import asyncio
 import time
 import pathlib
-import importlib
+import importlib.util
 import ctypes
 
 from dataclasses import dataclass
