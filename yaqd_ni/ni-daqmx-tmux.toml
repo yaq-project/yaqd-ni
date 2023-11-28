@@ -88,7 +88,7 @@ type = "map"
 values = "chopper"
 default = {}
 
-[config.shots_processing_script]
+[config.shots_processing_path]
 type = ["null", "string"]
 doc = "Path to script for shots processing."
 default = "__null__"

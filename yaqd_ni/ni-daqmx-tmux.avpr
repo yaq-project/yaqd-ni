@@ -90,7 +90,7 @@
                 "string"
             ]
         },
-        "shots_processing_script": {
+        "shots_processing_path": {
             "default": null,
             "doc": "Path to script for shots processing.",
             "type": [
