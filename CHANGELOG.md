@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2023.11.1]
+
+### Fixed
+- replaced residual gitlab project links with github project links
+
 ## [2023.11.0]
 
 ### Fixed
@@ -95,7 +100,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/yaq-project/yaqd-ni/-/compare/v2023.11.0...main
+[Unreleased]: https://github.com/yaq-project/yaqd-ni/-/compare/v2023.11.1...main
+[2023.11.1]: https://github.com/yaq-project/yaqd-ni/-/compare/v2023.11.0....v2023.11.1
 [2023.11.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.11.0....v2023.11.0
 [2022.11.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.7.1....v2022.11.0
 [2022.7.1]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.7.0....v2022.7.1
