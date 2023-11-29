@@ -29,8 +29,8 @@ classifiers = [
 ]
 
 [tool.flit.metadata.urls]
-Source = "https://gitlab.com/yaq/yaqd-ni"
-Issues = "https://gitlab.com/yaq/yaqd-ni/issues"
+Source = "https://github.com/yaq-project/yaqd-ni"
+Issues = "https://github.com/yaq-project/yaqd-ni/issues"
 
 [tool.flit.metadata.requires-extra]
 dev = ["black", "pre-commit"]
@@ -45,7 +45,7 @@ ni_daqmx_tmux = "yaqd_ni._ni_daqmx_tmux_gui:ConfigWidget"
 
 [tool.black]
 line-length = 99
-target-version = ['py37', 'py38']
+target-version = ['py39', 'py310']
 include = '\.pyi?$'
 exclude = '''
 /(
