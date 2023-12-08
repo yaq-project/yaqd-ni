@@ -8,7 +8,7 @@ from qtpy import QtCore, QtGui, QtWidgets  # type: ignore
 import pyqtgraph as pg  # type: ignore
 import qtypes  # type: ignore
 import yaqc  # type: ignore
-import toml
+import tomli  # type: ignore
 import numpy as np  # type: ignore
 
 
@@ -175,7 +175,7 @@ class ConfigWidget(QtWidgets.QWidget):
         task = self.client.get_config()
         while not task.finished:
             time.sleep(0.1)
-        config = toml.loads(task.result)
+        config = tomli.loads(task.result)
         self.nsamples = config["nsamples"]
         self.channels = {}
         for k, d in config["channels"].items():

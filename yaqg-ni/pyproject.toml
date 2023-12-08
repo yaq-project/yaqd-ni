@@ -16,7 +16,7 @@ requires = [
     "qtypes",
     "qtpy",
     "numpy",
-    "toml>=0.10.2",
+    "tomli,
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",

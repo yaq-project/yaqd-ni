@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [2023.12.0]
 
+### Changed
+- gui uses `tomli` package instead of `toml`
+
 ### Added
 - initial release
 
