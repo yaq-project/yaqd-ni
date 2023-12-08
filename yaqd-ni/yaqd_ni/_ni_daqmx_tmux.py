@@ -66,7 +66,9 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
             d["range"] = tuple(d["range"])
             channel = Channel(**d, physical_channel=k)
             self._channels.append(channel)
-        self._raw_channel_names = [c.name for c in self._channels if c.enabled]  # from config only
+        self._raw_channel_names = [
+            c.name for c in self._channels if c.enabled
+        ]  # from config only
         # choppers
         self._choppers = []
         for k, d in self._config["choppers"].items():
@@ -81,7 +83,9 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         # run shots processing with fake data
         channel_names = [c.name for c in self._channels if c.enabled]
         chopper_names = [c.name for c in self._choppers if c.enabled]
-        shots = np.zeros((len(channel_names) + len(chopper_names), self._state["nshots"]))
+        shots = np.zeros(
+            (len(channel_names) + len(chopper_names), self._state["nshots"])
+        )
         names = channel_names + chopper_names
         kinds = ["channel"] * len(channel_names) + ["chopper"] * len(chopper_names)
 
@@ -100,14 +104,18 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
             warnings.simplefilter("ignore")
             out = self.processing_module.process(shots, names, kinds)
         self._channel_names = out[1]  # expected by parent
-        self._channel_units = {k: "V" for k in self._channel_names}  # expected by parent
+        self._channel_units = {
+            k: "V" for k in self._channel_names
+        }  # expected by parent
 
         # check channel ranges are valid
         self.ranges = self._get_voltage_ranges()
         is_similar_to_valid = (
             lambda x: x in self.ranges
         )  # [all(np.isclose(x, r)) for r in self.ranges]
-        invalid_ranges = [ch.name for ch in self._channels if not is_similar_to_valid(ch.range)]
+        invalid_ranges = [
+            ch.name for ch in self._channels if not is_similar_to_valid(ch.range)
+        ]
         if invalid_ranges:
             self.logger.error(
                 f"""channels {invalid_ranges} have invalid voltage ranges. \
@@ -140,7 +148,9 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
         self._sample_correspondances = np.zeros(self._config["nsamples"])
         # channels
         for sample_index in range(self._config["nsamples"]):
-            channel_idxs = []  # contains indicies of all channels that want to read at this sample
+            channel_idxs = (
+                []
+            )  # contains indicies of all channels that want to read at this sample
             for channel_index, channel in enumerate(self._channels):
                 if not channel.enabled:
                     continue
@@ -209,20 +219,29 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
                 correspondance = int(correspondance)
                 if correspondance == 0:
                     physical_channel = (
-                        "/" + self._config["device_name"] + "/" + self._config["rest_channel"]
+                        "/"
+                        + self._config["device_name"]
+                        + "/"
+                        + self._config["rest_channel"]
                     )
                     min_voltage = -10.0
                     max_voltage = 10.0
                 elif correspondance > 0:
                     channel = self._channels[correspondance - 1]
                     physical_channel = (
-                        "/" + self._config["device_name"] + "/" + channel.physical_channel
+                        "/"
+                        + self._config["device_name"]
+                        + "/"
+                        + channel.physical_channel
                     )
                     min_voltage, max_voltage = channel.range
                 elif correspondance < 0:
                     chopper = self._choppers[-correspondance - 1]
                     physical_channel = (
-                        "/" + self._config["device_name"] + "/" + chopper.physical_channel
+                        "/"
+                        + self._config["device_name"]
+                        + "/"
+                        + chopper.physical_channel
                     )
                     min_voltage = -10.0
                     max_voltage = 10.0
@@ -287,7 +306,8 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
 
         shots = np.empty(
             [
-                len(self._raw_channel_names) + len([c for c in self._choppers if c.enabled]),
+                len(self._raw_channel_names)
+                + len([c for c in self._choppers if c.enabled]),
                 self._state["nshots"],
             ]
         )
@@ -308,7 +328,9 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
                 idxs = self._sample_correspondances == channel_index + 1
                 idxs[: channel.signal_stop + 1] = False
                 baseline_samples = samples[idxs]
-                baseline_shots = process_samples(channel.baseline_method, baseline_samples)
+                baseline_shots = process_samples(
+                    channel.baseline_method, baseline_samples
+                )
             # math
             shots[i] = signal_shots - baseline_shots
             if channel.invert:
@@ -347,18 +369,26 @@ class NiDaqmxTmux(HasMeasureTrigger, IsSensor, IsDaemon):
     def _measure_samples(self):
         import PyDAQmx  # type: ignore
 
-        samples = np.zeros(int(self._state["nshots"] * self._config["nsamples"]), dtype=np.float64)
-        for wait in np.geomspace(0.01, 60, 10):  # exponential backoff for retrying measurement
+        samples = np.zeros(
+            int(self._state["nshots"] * self._config["nsamples"]), dtype=np.float64
+        )
+        for wait in np.geomspace(
+            0.01, 60, 10
+        ):  # exponential backoff for retrying measurement
             try:
                 self._read = PyDAQmx.int32()
                 PyDAQmx.DAQmxStartTask(self._task_handle)
                 PyDAQmx.DAQmxReadAnalogF64(
                     self._task_handle,  # task handle
                     int(self._state["nshots"]),  # number of samples per channel
-                    self._config["timeout"],  # timeout (seconds) for each read operation
+                    self._config[
+                        "timeout"
+                    ],  # timeout (seconds) for each read operation
                     PyDAQmx.DAQmx_Val_GroupByScanNumber,  # fill mode
                     samples,  # read array
-                    len(samples),  # size of the array, in samples, into which samples are read
+                    len(
+                        samples
+                    ),  # size of the array, in samples, into which samples are read
                     PyDAQmx.byref(self._read),  # reference of thread
                     None,  # reserved by NI
                 )
