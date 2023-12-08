@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Changed
+- guis for `yaqd-ni` daemons will now be found in the `yaqg-ni` package
+
 ## [2023.11.1]
 
 ### Fixed
