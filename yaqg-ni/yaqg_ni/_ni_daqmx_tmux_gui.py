@@ -8,7 +8,7 @@ from qtpy import QtCore, QtGui, QtWidgets  # type: ignore
 import pyqtgraph as pg  # type: ignore
 import qtypes  # type: ignore
 import yaqc  # type: ignore
-import toml
+import tomli  # type: ignore
 import numpy as np  # type: ignore
 
 
@@ -67,7 +67,9 @@ class Channel:
         self.signal_method = qtypes.Enum(
             "processing", disabled=True, allowed=processing_methods, value=signal_method
         )
-        self.use_baseline = qtypes.Bool("Use Baseline", disabled=True, value=use_baseline)
+        self.use_baseline = qtypes.Bool(
+            "Use Baseline", disabled=True, value=use_baseline
+        )
         self.baseline_start_index = qtypes.Integer(
             "baseline start index", disabled=True, value=baseline_start, **sample_limits
         )
@@ -75,10 +77,16 @@ class Channel:
             "baseline stop index", disabled=True, value=baseline_stop, **sample_limits
         )
         self.baseline_pre_index = qtypes.Integer(
-            "baseline pre index", disabled=True, value=baseline_presample, **sample_limits
+            "baseline pre index",
+            disabled=True,
+            value=baseline_presample,
+            **sample_limits
         )
         self.baseline_method = qtypes.Enum(
-            "processing", disabled=True, allowed=processing_methods, value=baseline_method
+            "processing",
+            disabled=True,
+            allowed=processing_methods,
+            value=baseline_method,
         )
         # signals
         self.use_baseline.updated_connect(lambda x: self.on_use_baseline())
@@ -86,7 +94,9 @@ class Channel:
 
     @property
     def baseline_start(self):
-        return self.baseline_start_index.get_value() - self.baseline_pre_index.get_value()
+        return (
+            self.baseline_start_index.get_value() - self.baseline_pre_index.get_value()
+        )
 
     @property
     def baseline_stop(self):
@@ -165,7 +175,7 @@ class ConfigWidget(QtWidgets.QWidget):
         task = self.client.get_config()
         while not task.finished:
             time.sleep(0.1)
-        config = toml.loads(task.result)
+        config = tomli.loads(task.result)
         self.nsamples = config["nsamples"]
         self.channels = {}
         for k, d in config["channels"].items():
@@ -223,15 +233,21 @@ class ConfigWidget(QtWidgets.QWidget):
         self.samples_plot_min_voltage_line = self.samples_plot_widget.add_infinite_line(
             color="y", angle=0
         )
-        self.samples_plot_signal_stop_line = self.samples_plot_widget.add_infinite_line(color="r")
-        self.samples_plot_signal_start_line = self.samples_plot_widget.add_infinite_line(color="g")
-        self.samples_plot_baseline_stop_line = self.samples_plot_widget.add_infinite_line(
-            color="r", style="dashed"
+        self.samples_plot_signal_stop_line = self.samples_plot_widget.add_infinite_line(
+            color="r"
         )
-        self.samples_plot_baseline_start_line = self.samples_plot_widget.add_infinite_line(
-            color="g", style="dashed"
+        self.samples_plot_signal_start_line = (
+            self.samples_plot_widget.add_infinite_line(color="g")
         )
-        self.samples_plot_chopper_line = self.samples_plot_widget.add_infinite_line(color="b")
+        self.samples_plot_baseline_stop_line = (
+            self.samples_plot_widget.add_infinite_line(color="r", style="dashed")
+        )
+        self.samples_plot_baseline_start_line = (
+            self.samples_plot_widget.add_infinite_line(color="g", style="dashed")
+        )
+        self.samples_plot_chopper_line = self.samples_plot_widget.add_infinite_line(
+            color="b"
+        )
         display_layout.addWidget(self.samples_plot_widget)
         legend = self.samples_plot_widget.plot_object.addLegend()
         legend.addItem(self.samples_plot_active_scatter, "channel samples")
@@ -331,13 +347,19 @@ class ConfigWidget(QtWidgets.QWidget):
             config["channels"][k]["invert"] = channel.invert.get_value()
             config["channels"][k]["signal_start"] = channel.signal_start.get_value()
             config["channels"][k]["signal_stop"] = channel.signal_stop.get_value()
-            config["channels"][k]["signal_presample"] = channel.signal_presample.get_value()
+            config["channels"][k][
+                "signal_presample"
+            ] = channel.signal_presample.get_value()
             config["channels"][k]["signal_method"] = channel.signal_method.get_value()
             config["channels"][k]["use_baseline"] = channel.use_baseline.get_value()
             config["channels"][k]["baseline_start"] = channel.baseline_start.get_value()
             config["channels"][k]["baseline_stop"] = channel.baseline_stop.get_value()
-            config["channels"][k]["baseline_presample"] = channel.baseline_presample.get_value()
-            config["channels"][k]["baseline_method"] = channel.baseline_method.get_value()
+            config["channels"][k][
+                "baseline_presample"
+            ] = channel.baseline_presample.get_value()
+            config["channels"][k][
+                "baseline_method"
+            ] = channel.baseline_method.get_value()
         # choppers
         for k, c in config["channels"].items():
             channel = self.channels[k]
@@ -347,13 +369,19 @@ class ConfigWidget(QtWidgets.QWidget):
             config["channels"][k]["invert"] = channel.invert.get_value()
             config["channels"][k]["signal_start"] = channel.signal_start.get_value()
             config["channels"][k]["signal_stop"] = channel.signal_stop.get_value()
-            config["channels"][k]["signal_presample"] = channel.signal_presample.get_value()
+            config["channels"][k][
+                "signal_presample"
+            ] = channel.signal_presample.get_value()
             config["channels"][k]["signal_method"] = channel.signal_method.get_value()
             config["channels"][k]["use_baseline"] = channel.use_baseline.get_value()
             config["channels"][k]["baseline_start"] = channel.baseline_start.get_value()
             config["channels"][k]["baseline_stop"] = channel.baseline_stop.get_value()
-            config["channels"][k]["baseline_presample"] = channel.baseline_presample.get_value()
-            config["channels"][k]["baseline_method"] = channel.baseline_method.get_value()
+            config["channels"][k][
+                "baseline_presample"
+            ] = channel.baseline_presample.get_value()
+            config["channels"][k][
+                "baseline_method"
+            ] = channel.baseline_method.get_value()
         # TODO: write config
 
     def on_nshots_updated(self, new):
@@ -390,12 +418,18 @@ class ConfigWidget(QtWidgets.QWidget):
         current_channel_object = self.channels[self.samples_channel_combo.get_value()]
         if current_channel_object.enabled.get_value():
             self.samples_plot_active_scatter.show()
-            s = slice(current_channel_object.signal_start, current_channel_object.signal_stop, 1)
+            s = slice(
+                current_channel_object.signal_start,
+                current_channel_object.signal_stop,
+                1,
+            )
             xi = self.sample_xi[s]
             yyi = yi[:][s]
             if current_channel_object.use_baseline.get_value():
                 s = slice(
-                    current_channel_object.baseline_start, current_channel_object.baseline_stop, 1
+                    current_channel_object.baseline_start,
+                    current_channel_object.baseline_stop,
+                    1,
                 )
                 xi = np.hstack([xi, self.sample_xi[s]])
                 yyi = np.hstack([yyi, yi[s]])
@@ -461,7 +495,9 @@ class ConfigWidget(QtWidgets.QWidget):
         current_chopper_object = list(self.choppers.values())[chopper_index]
         if current_chopper_object.enabled.get_value():
             self.samples_plot_chopper_line.show()
-            self.samples_plot_chopper_line.setValue(current_chopper_object.index.get_value())
+            self.samples_plot_chopper_line.setValue(
+                current_chopper_object.index.get_value()
+            )
         # finish
         ymin, ymax = current_channel_object.get_range()
         self.samples_plot_widget.set_ylim(ymin, ymax)
@@ -499,7 +535,9 @@ class Plot1D(pg.GraphicsView):
         self.plot_object.addItem(curve)
         return curve
 
-    def add_infinite_line(self, color="y", style="solid", angle=90.0, movable=False, hide=True):
+    def add_infinite_line(
+        self, color="y", style="solid", angle=90.0, movable=False, hide=True
+    ):
         """
         Add an InfiniteLine object.
         Parameters

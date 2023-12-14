@@ -1,0 +1,81 @@
+[daq]
+port = 38999
+loop_at_startup = false
+device_name = "Dev1"
+trigger_source = "PFI0"
+rest_channel = "ai7"
+shots_processing_path = "C:\\Users\\john\\source\\scripts\\shots_processing\\single_chopping_c2_DPL.py"
+
+[daq.channels.ai0]
+enabled = true
+name = "sample"
+invert = false
+signal_start = 0
+signal_stop = 30
+signal_presample = 0
+signal_method = "average"
+use_baseline = true
+baseline_start = 800
+baseline_stop = 830
+baseline_presample = 0
+baseline_method = "average"
+range = [-10.0, 10.0]
+
+[daq.channels.ai1]
+enabled = false
+name = "thermopile"
+invert = false
+signal_start = 630
+signal_stop = 730
+signal_presample = 0
+signal_method = "average"
+use_baseline = false
+baseline_start = 732
+baseline_stop = 733
+baseline_presample = 0
+baseline_method = "average"
+range = [-10.0, 10.0]
+
+[daq.channels.ai2]
+enabled = false
+name = "pyro_1"
+invert = true
+signal_start = 30
+signal_stop = 59
+signal_presample = 0
+signal_method = "average"
+use_baseline = true
+baseline_start = 830
+baseline_stop = 859
+baseline_presample = 0
+baseline_method = "average"
+range = [-2.0, 2.0]
+
+[daq.channels.ai3]
+enabled = true
+name = "pyro_2"
+invert = true
+signal_start = 60
+signal_stop = 89
+signal_presample = 0
+signal_method = "average"
+use_baseline = true
+baseline_start = 870
+baseline_stop = 899
+baseline_presample = 0
+baseline_method = "average"
+range = [-0.5, 0.5]
+
+[daq.choppers.ai4]
+enabled = false
+name = "chopper_1"
+invert = true
+index = 775
+
+[daq.choppers.ai5]
+enabled = true
+name = "chopper_2"
+invert = false
+index = 300
+
+

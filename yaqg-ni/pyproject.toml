@@ -3,18 +3,20 @@ requires = ["flit_core >=2,<4"]
 build-backend = "flit_core.buildapi"
 
 [tool.flit.metadata]
-module = "yaqd_ni"
-dist-name = "yaqd-ni"
+module = "yaqg_ni"
+dist-name = "yaqg-ni"
 author = "Blaise Thompson"
 author-email = "blaise@untzag.com"
 home-page = "https://yaq.fyi"
 description-file = "README.md"
 requires-python = ">=3.7"
 requires = [
-    "yaqd-core>=2021.3.0",
-    "pydaqmx",
+    "yaqc",
+    "pyqtgraph",
+    "qtypes",
+    "qtpy",
     "numpy",
-    "toml>=0.10.2",
+    "tomli,
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -29,19 +31,17 @@ classifiers = [
 ]
 
 [tool.flit.metadata.urls]
-Source = "https://github.com/yaq-project/yaqd-ni"
+Source = "https://github.com/yaq-project/yaqd-ni/"
 Issues = "https://github.com/yaq-project/yaqd-ni/issues"
 
 [tool.flit.metadata.requires-extra]
 dev = ["black", "pre-commit"]
-gui = ["pyqtgraph", "qtpy", "qtypes", "yaqc"]
 
 [tool.flit.scripts]
-yaqd-ni-daqmx-tmux = "yaqd_ni._ni_daqmx_tmux:NiDaqmxTmux.main"
-yaqd-ni-daqmx-tmux-gui = "yaqd_ni._ni_daqmx_tmux_gui:main"
+yaqd-ni-daqmx-tmux-gui = "yaqg_ni._ni_daqmx_tmux_gui:main"
 
 [tool.flit.entrypoints."yaqc_qtpy.main.ni_daqmx_tmux"]
-ni_daqmx_tmux = "yaqd_ni._ni_daqmx_tmux_gui:ConfigWidget"
+ni_daqmx_tmux = "yaqg_ni._ni_daqmx_tmux_gui:ConfigWidget"
 
 [tool.black]
 line-length = 99
