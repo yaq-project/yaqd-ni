@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2023.12.0]
+
 ### Changed
 - guis for `yaqd-ni` daemons will now be found in the `yaqg-ni` package
 
@@ -103,7 +105,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/yaq-project/yaqd-ni/-/compare/v2023.11.1...main
+[Unreleased]: https://github.com/yaq-project/yaqd-ni/-/compare/v2023.12.0...main
+[2023.12.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2023.11.1....v2023.12.0
 [2023.11.1]: https://github.com/yaq-project/yaqd-ni/-/compare/v2023.11.0....v2023.11.1
 [2023.11.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.11.0....v2023.11.0
 [2022.11.0]: https://github.com/yaq-project/yaqd-ni/-/compare/v2022.7.1....v2022.11.0
