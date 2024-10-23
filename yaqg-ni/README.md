@@ -9,9 +9,11 @@
 
 qtpy guis for yaqd-ni daemons.  These GUIs can be run as standalone programs or integrate with [yaqc-qtpy](https://github.com/yaq-project/yaqc-qtpy) as plugins.
 
-This package contains the following gui(s):
-
-- yaqd-ni-daqmx-tmux
+## yaqd-ni-daqmx-tmux-gui
+This gui works with `yaqd-ni-daqmx-tmux`.  For standalone operation, run the entry point and provide the daemon port, e.g.
+```
+yaqd-ni-daqmx-tmux-gui 38999
+```
 
 ## maintainers
 - [Blaise Thompson](https://github.com/untzag)
