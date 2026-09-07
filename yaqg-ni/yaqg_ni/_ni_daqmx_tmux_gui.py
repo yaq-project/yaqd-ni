@@ -11,7 +11,6 @@ import yaqc  # type: ignore
 import tomli  # type: ignore
 import numpy as np  # type: ignore
 
-
 # TODO: actually read these values from the driver ---Blaise 2017-01-06
 ranges = [0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0]  # V
 resolution = {}  # uV
